@@ -1,0 +1,5 @@
+[submodule "components/labmanager-common"]
+	path = components/labmanager-common
+	url = https://dkleissa@github.com/gigantum/labmanager-common.git
+    branch = integration
+    
