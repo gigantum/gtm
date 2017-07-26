@@ -2,3 +2,6 @@
 	path = components/labmanager-common
 	url = https://github.com/gigantum/labmanager-common.git
     branch = integration
+[submodule "components/labmanager-service-labbook"]
+	path = components/labmanager-service-labbook
+	url = https://github.com/gigantum/labmanager-service-labbook.git
