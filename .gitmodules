@@ -5,5 +5,5 @@
 	path = gtmlib/resources/submodules/labmanager-service-labbook
 	url = https://github.com/gigantum/labmanager-service-labbook.git
 [submodule "gtmlib/resources/submodules/labmanager-ui"]
-	path = gtmlib/resources/submodules/labmanager-ui
+	path = gtmlib/resources/frontend_build/labmanager-ui
 	url = https://github.com/gigantum/labmanager-ui.git
