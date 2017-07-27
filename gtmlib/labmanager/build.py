@@ -137,6 +137,9 @@ class Build(object):
         # Get Dockerfile directory
         docker_file_dir = os.path.expanduser(os.path.join(resource_filename("gtmlib", "labmanager/docker")))
 
+        # Write updated config file
+        # TODO: overwrite params from default
+
         # Build image
         if show_output:
             print("\nStarting to build image {}, please wait...\n\n".format(self.image_name))
