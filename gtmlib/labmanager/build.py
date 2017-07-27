@@ -134,6 +134,12 @@ class Build(object):
                 # User said no
                 raise ValueError("User aborted build due to duplicate image name.")
 
+        # TODO: check if frontend_build image exists
+
+            # TODO: Build front end image
+
+        # TODO: run frontend_build container to build frontend
+
         # Get Dockerfile directory
         docker_file_dir = os.path.expanduser(os.path.join(resource_filename("gtmlib", "labmanager/docker")))
 
