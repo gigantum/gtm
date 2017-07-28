@@ -33,13 +33,13 @@ def setup_build_class():
     b.image_name = "test-labmanager-image"
 
     # Make sure image doesn't exist
-    if b.image_exists():
+    if b.image_exists("test-labmanager-image"):
         b.remove_image("test-labmanager-image")
 
     yield b
 
     # Remove image post test if it still exists
-    if b.image_exists():
+    if b.image_exists("test-labmanager-image"):
         b.remove_image("test-labmanager-image")
 
 
@@ -85,10 +85,10 @@ class TestLabManagerBuild(object):
 
     def test_build_labmanager(self, setup_build_class):
         """Method to test building a labmanager image"""
-        assert setup_build_class.image_exists() is False
+        assert setup_build_class.image_exists("test-labmanager-image") is False
 
         # build
-        setup_build_class.build_image()
+        setup_build_class.build_image(show_output=False)
 
         # Should now exist
-        assert setup_build_class.image_exists() is True
+        assert setup_build_class.image_exists("test-labmanager-image") is True
