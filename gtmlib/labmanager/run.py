@@ -39,6 +39,18 @@ class LabManagerRunner(object):
         """Return True if a container by given name exists with `docker ps -a`. """
         return any([container.name == self.image_name for container in self.docker_client.containers.list()])
 
+    def stop(self, cleanup: bool=True):
+        """Stop the docker container by this name. """
+        if not self.is_running:
+            raise ValueError("Cannot stop container that is not running.")
+        else:
+            containers = filter(lambda c: c.name == self.image_name, self.docker_client.containers.list())
+            assert len(containers) == 0
+            containers[0].stop()
+            if cleanup:
+                self.docker_client.containers.prune()
+
+
     def launch(self):
         """Launch the docker container. """
         # Note: This is the command needed to be replicated programmatically...

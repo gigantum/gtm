@@ -76,7 +76,7 @@ def labmanager_actions(args):
 
         # Print Name of image
         print("\n\n\n*** Built LabManager Image: {}".format(builder.image_name))
-    elif args.action == "run":
+    elif args.action == "run" or args.action == "stop":
         image_name = "gigantum/labmanager-ui-builder"
         if "override_name" in args:
             if args.override_name:
@@ -99,7 +99,8 @@ if __name__ == '__main__':
     # Setup supported components and commands
     components = {}
     components['labmanager'] = [["build", "Build the LabManager Docker image"],
-                                ["run", "Run a specified Lab Manager Docker image"]]
+                                ["run", "Run a specified Lab Manager Docker image"],
+                                ["stop", "Stop a specific LabManager Docker image"]]
 
     # Prep the help string
     help_str = format_component_help(components)
