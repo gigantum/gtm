@@ -78,14 +78,14 @@ def labmanager_actions(args):
         print("\n\n\n*** Built LabManager Image: {}".format(builder.image_name))
     elif args.action == "run":
         image_name = "gigantum/labmanager-ui-builder"
-        if "name" in args:
-            if args.name:
+        if "override_name" in args:
+            if args.override_name:
                 image_name = args.override_name
 
-        launcher = labmanager.LabManagerRunner(image_name, show_output=args.verbose)
+        launcher = labmanager.LabManagerRunner(image_name=image_name, show_output=args.verbose)
         launcher.launch()
-        
-        print("\n\n\n*** Ran: {}".format(args.name))
+
+        print("\n\n\n*** Ran: {}".format(image_name))
     elif hasattr(args, "name"):
         print("Error: Invalid action `{}'".format(args.name), file=sys.stderr)
         sys.exit(1)
