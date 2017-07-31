@@ -44,4 +44,4 @@ class LabManagerTester(object):
         """
 
         container = self._retrieve_container()
-        container.exec_run("cd /opt && py.test")
+        print(container.exec_run("py.test /opt"))
