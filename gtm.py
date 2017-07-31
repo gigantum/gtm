@@ -85,7 +85,7 @@ def labmanager_actions(args):
         launcher = labmanager.LabManagerRunner(image_name=image_name, show_output=args.verbose)
         launcher.launch()
 
-        print("\n\n\n*** Ran: {}".format(image_name))
+        print("*** Ran: {}".format(image_name))
     elif hasattr(args, "name"):
         print("Error: Invalid action `{}'".format(args.name), file=sys.stderr)
         sys.exit(1)
