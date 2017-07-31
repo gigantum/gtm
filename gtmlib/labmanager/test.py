@@ -37,12 +37,13 @@ class LabManagerTester(object):
         else:
             return cns[0]
 
-    def test(self) -> bool:
-        """ Return True if all unit tests for labmanager pass.
+    def test(self) -> None:
+        """ Shows debug output of running pytest inside the container.
 
         Note: Throws ValueError if the container does not exist.
         """
 
         container = self._retrieve_container()
         [print(p.decode('UTF-8'), end='') for p in container.exec_run("py.test /opt", stream=True)]
-        print(container.exec_run("echo $?"))
+
+        # TODO - Capture return code to see if tests pass - this is difficult to do.

@@ -76,7 +76,7 @@ def labmanager_actions(args):
 
         # Print Name of image
         print("\n\n\n*** Built LabManager Image: {}".format(builder.image_name))
-    elif args.action == "run" or args.action == "stop":
+    elif args.action == "start" or args.action == "stop":
         image_name = "gigantum/labmanager-ui-builder"
         if "override_name" in args:
             if args.override_name:
@@ -84,19 +84,19 @@ def labmanager_actions(args):
 
         launcher = labmanager.LabManagerRunner(image_name=image_name, show_output=args.verbose)
 
-        if args.action == "run":
+        if args.action == "start":
             if not launcher.is_running:
                 launcher.launch()
                 print("*** Ran: {}".format(image_name))
             else:
-                print("Error: Docker container by name `{}' is already running.".format(image_name))
+                print("Error: Docker container by name `{}' is already started.".format(image_name))
                 sys.exit(1)
         elif args.action == "stop":
             if launcher.is_running:
                 launcher.stop()
                 print("*** Stopped: {}".format(image_name))
             else:
-                print("Error: Docker container by name `{}' is not running.".format(image_name))
+                print("Error: Docker container by name `{}' is not started.".format(image_name))
                 sys.exit(1)
     elif args.action == "test":
         image_name = "gigantum/labmanager-ui-builder"
@@ -114,8 +114,9 @@ def labmanager_actions(args):
 if __name__ == '__main__':
     # Setup supported components and commands
     components = {}
+    # TODO -- Rename "run" to "start"
     components['labmanager'] = [["build", "Build the LabManager Docker image"],
-                                ["run", "Run a specified Lab Manager Docker image"],
+                                ["start", "Start a specified Lab Manager Docker image"],
                                 ["stop", "Stop a specific LabManager Docker image"],
                                 ["test", "Run internal tests on a LabManager Docker image"]]
 
