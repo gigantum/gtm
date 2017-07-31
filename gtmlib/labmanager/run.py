@@ -22,7 +22,7 @@ import os
 import docker
 
 class LabManagerRunner(object):
-    """Class to manage the launch of a labbook container.
+    """Class to manage the launch (or termination) of a labbook container.
     """
 
     def __init__(self, image_name: str, show_output: bool=False):
@@ -41,6 +41,7 @@ class LabManagerRunner(object):
 
     def stop(self, cleanup: bool=True):
         """Stop the docker container by this name. """
+
         if not self.is_running:
             raise ValueError("Cannot stop container that is not running.")
         else:
@@ -49,7 +50,6 @@ class LabManagerRunner(object):
             containers[0].stop()
             if cleanup:
                 self.docker_client.containers.prune()
-
 
     def launch(self):
         """Launch the docker container. """
