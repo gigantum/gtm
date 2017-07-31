@@ -84,12 +84,20 @@ def labmanager_actions(args):
 
         launcher = labmanager.LabManagerRunner(image_name=image_name, show_output=args.verbose)
 
-        if not launcher.is_running:
-            launcher.launch()
-            print("*** Ran: {}".format(image_name))
-        else:
-            print("Error: Docker container by name `{}' is already running.".format(image_name))
-            sys.exit(1)
+        if args.action == "run":
+            if not launcher.is_running:
+                launcher.launch()
+                print("*** Ran: {}".format(image_name))
+            else:
+                print("Error: Docker container by name `{}' is already running.".format(image_name))
+                sys.exit(1)
+        elif args.action == "stop":
+            if launcher.is_running:
+                launcher.stop()
+                print("*** Stopped: {}".format(image_name))
+            else:
+                print("Error: Docker container by name `{}' is not running.".format(image_name))
+                sys.exit(1)
     else:
         print("Error: No action provided.", file=sys.stderr)
         sys.exit(1)

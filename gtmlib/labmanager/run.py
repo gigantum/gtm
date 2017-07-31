@@ -44,8 +44,8 @@ class LabManagerRunner(object):
         if not self.is_running:
             raise ValueError("Cannot stop container that is not running.")
         else:
-            containers = filter(lambda c: c.name == self.image_name, self.docker_client.containers.list())
-            assert len(containers) == 0
+            containers = list(filter(lambda c: c.name == self.image_name, self.docker_client.containers.list()))
+            assert len(containers) == 1
             containers[0].stop()
             if cleanup:
                 self.docker_client.containers.prune()
