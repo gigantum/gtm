@@ -25,10 +25,11 @@ class LabManagerRunner(object):
     """Class to manage the launch of a labbook container.
     """
 
-    def __init__(self, image_name: str):
+    def __init__(self, image_name: str, show_output: bool):
         self.docker_client = docker.from_env()
         self.image_name = image_name
         self.docker_image = self.docker_client.images.get(image_name)
+        self.show_output = show_output
 
         if not self.docker_image:
             raise ValueError("Image name `{}' does not exist.".format(image_name))
@@ -50,4 +51,3 @@ class LabManagerRunner(object):
                                           init=True,
                                           port=port_mapping,
                                           volumes=volume_mapping)
-        
