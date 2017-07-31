@@ -53,9 +53,6 @@ class LabManagerRunner(object):
 
     def launch(self):
         """Launch the docker container. """
-        # Note: This is the command needed to be replicated programmatically...
-        #   docker run -d --name <image name> --init -p 5000:5000 -v "<local working dir>:/mnt/gigantum" \
-        #   -v /var/run/docker.sock:/var/run/docker.sock
 
         port_mapping = {'5000/tcp': 5000}
         volume_mapping = {
