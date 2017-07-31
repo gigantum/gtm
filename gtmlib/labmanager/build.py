@@ -131,17 +131,31 @@ class LabManagerBuilder(object):
         client = docker.from_env()
 
         # Remove stopped container if it exists
+        self.prune_container(image_name)
+
+        # Remove image
+        client.images.remove(image_name)
+
+    def prune_container(self, container_name: str) -> None:
+        """Remove a docker container by name
+
+        Args:
+            container_name(str): Name of the docker container to remove
+
+        Returns:
+            None
+        """
+        client = docker.from_env()
+
+        # Remove stopped container if it exists
         try:
             # Replace / with . if the repo is in the image name
-            container_name = image_name.replace("/", ".")
+            container_name = container_name.replace("/", ".")
 
             build_container = client.containers.get(container_name)
             build_container.remove()
         except NotFound:
             pass
-
-        # Remove image
-        client.images.remove(image_name)
 
     def build_image(self, show_output: bool=False) -> None:
         """Method to build the Docker Image
@@ -154,35 +168,43 @@ class LabManagerBuilder(object):
         # Check if image exists
         if self.image_exists(self.image_name):
             if ask_question("Image `{}` already exists. Do you wish to rebuild it?".format(self.image_name)):
-                # Image found. Delete it to allow rebuild
-                self.remove_image(self.image_name)
+                # Image found. Make sure container isn't running.
+                self.prune_container(self.image_name)
+                pass
             else:
                 # User said no
                 raise ValueError("User aborted build due to duplicate image name.")
 
         print("\n*** Building frontend build image {}, please wait...\n\n".format(self._ui_build_image_name))
 
-        # Rebuild front-end image to get latest sw
+        # Rebuild front-end image to get latest sw if desired
+        build_ui_container = True
         if self.image_exists(self._ui_build_image_name):
-            self.remove_image(self._ui_build_image_name)
+            if ask_question("Frontend build container already exists. Do you want to rebuild it?".format(self.image_name)):
+                # Remove so you can rebuild
+                self.remove_image(self._ui_build_image_name)
+            else:
+                build_ui_container = False
 
-        # Make sure build dir exists
         docker_file_dir = os.path.expanduser(os.path.join(resource_filename("gtmlib", "resources"), "frontend_build"))
-        if not os.path.isdir(os.path.join(docker_file_dir, "build")):
-            os.makedirs(os.path.join(docker_file_dir, "build"))
+        if build_ui_container:
+            # Make sure build dir exists
+            if not os.path.isdir(os.path.join(docker_file_dir, "build")):
+                os.makedirs(os.path.join(docker_file_dir, "build"))
 
-        # Build frontend image
-        if show_output:
-            [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=docker_file_dir,
-                                                                              tag=self._ui_build_image_name,
-                                                                              pull=True, rm=True,
-                                                                              stream=True, decode=True)]
-        else:
-            client.images.build(path=docker_file_dir, tag=self._ui_build_image_name, pull=True, rm=True)
+            # Build frontend image
+            if show_output:
+                [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=docker_file_dir,
+                                                                                  tag=self._ui_build_image_name,
+                                                                                  pull=True, rm=True,
+                                                                                  stream=True, decode=True)]
+            else:
+                client.images.build(path=docker_file_dir, tag=self._ui_build_image_name, pull=True, rm=True)
 
         print("\n\n*** Compiling frontend...\n\n")
         # Run frontend_build container to build frontend
         container_name = self._ui_build_image_name.replace("/", ".")
+        self.prune_container(container_name)
         if show_output:
             container = client.containers.run(self._ui_build_image_name,
                                               name=container_name,

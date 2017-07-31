@@ -3,7 +3,7 @@ MAINTAINER Gigantum <hello@gigantum.io>
 
 # Install system level dependencies
 RUN apt-get -y update; apt-get -y upgrade
-RUN apt-get -y install python3-dev python3-pip libleveldb-dev libleveldb1v5 git nginx supervisor curl
+RUN apt-get -y install python3-dev python3-pip libleveldb-dev libleveldb1v5 git nginx supervisor curl gosu
 
 # Setup Global git config
 RUN git config --global user.email "noreply@gigantum.io"; git config --global user.name "Gigantum AutoCommit"
@@ -27,13 +27,20 @@ RUN mkdir -p /mnt/gigantum
 COPY frontend_build/build/ /var/www/
 
 # Setup NGINX/uWSGI
-COPY nginx.conf /etc/nginx/sites-enabled/
+COPY nginx_ui.conf /etc/nginx/sites-enabled/
 COPY nginx_api.conf /etc/nginx/sites-enabled/
 RUN rm /etc/nginx/sites-enabled/default
 
 # Setup Supervisord to launch both uwsgi and nginx
-RUN mkdir -p /var/log/supervisor
+RUN mkdir -p /opt/log/supervisor; mkdir -p /opt/log/nginx; mkdir -p /opt/run; mkdir -p /opt/nginx
+RUN nginx; nginx -s reload; nginx -s quit
+COPY supervisord_base.conf /etc/supervisor/supervisord.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod u+x /usr/local/bin/entrypoint.sh
+
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Expose Ports
 EXPOSE 5000
