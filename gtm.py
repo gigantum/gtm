@@ -19,6 +19,8 @@
 # SOFTWARE.
 import argparse
 import os
+import sys
+
 from gtmlib import labmanager
 
 
@@ -74,12 +76,22 @@ def labmanager_actions(args):
 
         # Print Name of image
         print("\n\n\n*** Built LabManager Image: {}".format(builder.image_name))
+    elif args.action == "run":
+
+        print("\n\n\n*** Ran: {}".format(args.name))
+    elif hasattr(args, "name"):
+        print("Error: Invalid action `{}'".format(args.name), file=sys.stderr)
+        sys.exit(1)
+    else:
+        print("Error: No action provided.", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
     # Setup supported components and commands
     components = {}
-    components['labmanager'] = [["build", "Build the LabManager Docker image"]]
+    components['labmanager'] = [["build", "Build the LabManager Docker image"],
+                                ["run", "Run a specified Lab Manager Docker image"]]
 
     # Prep the help string
     help_str = format_component_help(components)
