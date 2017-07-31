@@ -64,7 +64,7 @@ def labmanager_actions(args):
         None
     """
     if args.action == "build":
-        builder = labmanager.Build()
+        builder = labmanager.LabManagerBuilder()
 
         if "name" in args:
             if args.name:

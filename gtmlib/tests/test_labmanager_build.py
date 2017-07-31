@@ -18,18 +18,15 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import pytest
-import tempfile
-import os
-import uuid
-import shutil
 
-from gtmlib.labmanager.build import Build
+
+from gtmlib.labmanager.build import LabManagerBuilder
 
 
 @pytest.fixture()
 def setup_build_class():
     """Fixture to create a Build instance with a test image name that does not exist and cleanup after"""
-    b = Build()
+    b = LabManagerBuilder()
     b.image_name = "test-labmanager-image"
 
     # Make sure image doesn't exist
@@ -46,7 +43,7 @@ def setup_build_class():
 class TestLabManagerBuild(object):
     def test_set_names(self):
         """Test getting and setting the container and image names"""
-        b = Build()
+        b = LabManagerBuilder()
 
         b.image_name = "my-image-13242"
         assert b.image_name == "my-image-13242"
@@ -56,14 +53,14 @@ class TestLabManagerBuild(object):
 
     def test_get_names(self):
         """Test getting and setting the container and image names"""
-        b = Build()
+        b = LabManagerBuilder()
 
         assert type(b.image_name) == str
         assert type(b.container_name) == str
 
     def test_invalid_names(self):
         """Method to test setting invalid names"""
-        b = Build()
+        b = LabManagerBuilder()
 
         with pytest.raises(ValueError):
             b.image_name = "my-image-"

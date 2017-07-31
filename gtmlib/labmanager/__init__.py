@@ -1,1 +1,1 @@
-from gtmlib.labmanager.build import Build
+from gtmlib.labmanager.build import LabManagerBuilder

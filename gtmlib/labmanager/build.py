@@ -23,13 +23,13 @@ from pkg_resources import resource_filename
 
 from git import Repo
 import docker
-from docker.errors import ImageNotFound
+from docker.errors import ImageNotFound, NotFound
 import yaml
 
 from gtmlib.common import ask_question
 
 
-class Build(object):
+class LabManagerBuilder(object):
     """Class to manage building the labmanager container
     """
     def __init__(self):
@@ -56,7 +56,7 @@ class Build(object):
         Returns:
             str
         """
-        return "labmanager-{}".format(self._get_current_commit_hash()[:8])
+        return "gigantum/labmanager-{}".format(self._get_current_commit_hash()[:8])
 
     def _generate_container_name(self) -> str:
         """Method to generate a name for the Docker container
@@ -64,7 +64,7 @@ class Build(object):
         Returns:
             str
         """
-        return "labmanager-{}".format(self._get_current_commit_hash()[:8])
+        return "gigantum.labmanager-{}".format(self._get_current_commit_hash()[:8])
 
     @property
     def image_name(self) -> str:
@@ -99,8 +99,8 @@ class Build(object):
     @container_name.setter
     def container_name(self, value: str) -> None:
         # Validate
-        if not re.match("^(?!-)(?!.*--)[A-Za-z0-9-]+(?<!-)$", value):
-            raise ValueError("Invalid container name provided. Only A-Za-z0-9- allowed w/ no leading/trailing hyphens.")
+        if not re.match("^(?!-)(?!.*--)[A-Za-z0-9_.-]+(?<!-)$", value):
+            raise ValueError("Invalid container name. Only A-Za-z0-9_.- allowed w/ no leading/trailing hyphens.")
 
         self._container_name = value
 
@@ -118,6 +118,30 @@ class Build(object):
             return True
         except ImageNotFound:
             return False
+
+    def remove_image(self, image_name: str) -> None:
+        """Remove a docker image by name
+
+        Args:
+            image_name(str): Name of the docker image to remove
+
+        Returns:
+            None
+        """
+        client = docker.from_env()
+
+        # Remove stopped container if it exists
+        try:
+            # Replace / with . if the repo is in the image name
+            container_name = image_name.replace("/", ".")
+
+            build_container = client.containers.get(container_name)
+            build_container.remove()
+        except NotFound:
+            pass
+
+        # Remove image
+        client.images.remove(image_name)
 
     def build_image(self, show_output: bool=False) -> None:
         """Method to build the Docker Image
@@ -158,14 +182,17 @@ class Build(object):
 
         print("\n\n*** Compiling frontend...\n\n")
         # Run frontend_build container to build frontend
+        container_name = self._ui_build_image_name.replace("/", ".")
         if show_output:
             container = client.containers.run(self._ui_build_image_name,
+                                              name=container_name,
                                               detach=True, init=True,
                                               volumes={os.path.join(docker_file_dir, "build"):
-                                                           {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
+                                                       {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
             [print(ln.decode("UTF-8")) for ln in container.attach(stream=True, logs=True)]
         else:
-            client.containers.run(self._ui_build_image_name, detach=False, init=True,
+            client.containers.run(self._ui_build_image_name,
+                                  name=container_name, detach=False, init=True,
                                   volumes={os.path.join(docker_file_dir, "build"):
                                            {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
 
@@ -202,14 +229,3 @@ class Build(object):
         else:
             client.images.build(path=docker_file_dir, tag=self.image_name, pull=True)
 
-    def remove_image(self, image_name: str) -> None:
-        """Remove a docker image by name
-
-        Args:
-            image_name(str): Name of the docker image to remove
-
-        Returns:
-            None
-        """
-        client = docker.from_env()
-        client.images.remove(image_name)
