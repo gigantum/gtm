@@ -17,6 +17,7 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
+import os
 
 import docker
 
@@ -37,6 +38,16 @@ class LabManagerRunner(object):
         # Note: This is the command needed to be replicated programmatically...
         #   docker run -d --name <image name> --init -p 5000:5000 -v "<local working dir>:/mnt/gigantum" \
         #   -v /var/run/docker.sock:/var/run/docker.sock
-        docker_client = docker.from_env()
 
-        docker_client.images[self.image_name]
+        port_mapping = {'5000/tcp', 5000}
+        volume_mapping = {
+            os.path.join(os.path.expanduser("~"), "gigantum"): '/mnt/gigantum',
+            '/var/log/run/docker.sock': '/var/run/docker.sock'
+        }
+
+        self.docker_client.containers.run(detach=True,
+                                          name=self.image_name,
+                                          init=True,
+                                          port=port_mapping,
+                                          volumes=volume_mapping)
+        
