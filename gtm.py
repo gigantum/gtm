@@ -77,7 +77,8 @@ def labmanager_actions(args):
         # Print Name of image
         print("\n\n\n*** Built LabManager Image: {}".format(builder.image_name))
     elif args.action == "run":
-
+        launcher = labmanager.LabManagerRunner(args.name)
+        launcher.launch()
         print("\n\n\n*** Ran: {}".format(args.name))
     elif hasattr(args, "name"):
         print("Error: Invalid action `{}'".format(args.name), file=sys.stderr)
