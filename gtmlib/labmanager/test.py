@@ -30,6 +30,7 @@ class LabManagerTester(object):
         self.container_name = container_name
 
     def _retrieve_container(self):
+        """Return container from name. """
         cns = [c for c in self.docker_client.containers.list() if c.name == self.container_name]
         if len(cns) != 1:
             raise ValueError("Container by name `{}' not found.".format(self.container_name))
@@ -42,4 +43,5 @@ class LabManagerTester(object):
         Note: Throws ValueError if the container does not exist.
         """
 
-        pass
+        container = self._retrieve_container()
+        container.exec_run()
