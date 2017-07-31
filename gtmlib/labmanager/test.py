@@ -44,4 +44,5 @@ class LabManagerTester(object):
         """
 
         container = self._retrieve_container()
-        print(container.exec_run("py.test /opt"))
+        [print(p.decode('UTF-8'), end='') for p in container.exec_run("py.test /opt", stream=True)]
+        print(container.exec_run("echo $?"))
