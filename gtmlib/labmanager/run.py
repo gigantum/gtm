@@ -34,6 +34,11 @@ class LabManagerRunner(object):
         if not self.docker_image:
             raise ValueError("Image name `{}' does not exist.".format(image_name))
 
+    @property
+    def is_running(self):
+        """Return True if a container by given name exists with `docker ps -a`. """
+        return any([container.name == self.image_name for container in self.docker_client.containers.list()])
+
     def launch(self):
         """Launch the docker container. """
         # Note: This is the command needed to be replicated programmatically...

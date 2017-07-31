@@ -83,9 +83,12 @@ def labmanager_actions(args):
                 image_name = args.override_name
 
         launcher = labmanager.LabManagerRunner(image_name=image_name, show_output=args.verbose)
-        launcher.launch()
+        if not launcher.is_running:
+            launcher.launch()
+            print("*** Ran: {}".format(image_name))
+        else:
+            print("Error: Docker container by name `{}' is already running.".format(image_name))
 
-        print("*** Ran: {}".format(image_name))
     elif hasattr(args, "name"):
         print("Error: Invalid action `{}'".format(args.name), file=sys.stderr)
         sys.exit(1)
