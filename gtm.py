@@ -98,6 +98,14 @@ def labmanager_actions(args):
             else:
                 print("Error: Docker container by name `{}' is not running.".format(image_name))
                 sys.exit(1)
+    elif args.action == "test":
+        image_name = "gigantum/labmanager-ui-builder"
+        if "override_name" in args:
+            if args.override_name:
+                image_name = args.override_name
+
+        tester = labmanager.LabManagerTester(image_name)
+        tester.test()
     else:
         print("Error: No action provided.", file=sys.stderr)
         sys.exit(1)
@@ -108,7 +116,8 @@ if __name__ == '__main__':
     components = {}
     components['labmanager'] = [["build", "Build the LabManager Docker image"],
                                 ["run", "Run a specified Lab Manager Docker image"],
-                                ["stop", "Stop a specific LabManager Docker image"]]
+                                ["stop", "Stop a specific LabManager Docker image"],
+                                ["test", "Run internal tests on a LabManager Docker image"]]
 
     # Prep the help string
     help_str = format_component_help(components)
