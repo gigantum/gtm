@@ -213,10 +213,19 @@ class LabManagerBuilder(object):
                                                        {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
             [print(ln.decode("UTF-8")) for ln in container.attach(stream=True, logs=True)]
         else:
+
+            # Docker does not take ntpath formatted strings as volume mounts.
+            # detect if it's a volume path and rewrite the string.
+            if re.match('(^[A-Z]):', docker_file_dir):
+                # for windows switch the slashes and then sub the drive letter
+                dkr_vol_path = os.path.join(docker_file_dir, "build").replace('\\', '/')
+                dkr_vol_path = re.sub('(^[A-Z]):(.*$)', '//\g<1>\g<2>', dkr_vol_path)
+            else:
+                dkr_vol_path = os.path.join(docker_file_dir, "build")
+
             client.containers.run(self._ui_build_image_name,
                                   name=container_name, detach=False, init=True,
-                                  volumes={os.path.join(docker_file_dir, "build"):
-                                           {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
+                                  volumes={dkr_vol_path: {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
 
         # Get Dockerfile directory
         docker_file_dir = os.path.expanduser(os.path.join(resource_filename("gtmlib", "resources")))
