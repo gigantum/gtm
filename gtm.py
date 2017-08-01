@@ -114,7 +114,6 @@ def labmanager_actions(args):
 if __name__ == '__main__':
     # Setup supported components and commands
     components = {}
-    # TODO -- Rename "run" to "start"
     components['labmanager'] = [["build", "Build the LabManager Docker image"],
                                 ["start", "Start a specified Lab Manager Docker image"],
                                 ["stop", "Stop a specific LabManager Docker image"],
