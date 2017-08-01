@@ -31,7 +31,7 @@ def ask_question(question: str) -> bool:
     valid_response = {"yes": True, "y": True, "no": False, "n": False}
 
     while True:
-        print("{} [y/n]: ".format(question))
+        print("{} [y/n]: ".format(question), end="")
         choice = input().lower().strip()
         if choice in valid_response:
             return valid_response[choice]

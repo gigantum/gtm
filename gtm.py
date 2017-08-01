@@ -138,6 +138,10 @@ if __name__ == '__main__':
                         default=False,
                         action='store_true',
                         help="Boolean indicating if detail status should be printed")
+    parser.add_argument("--no-cache",
+                        default=False,
+                        action='store_true',
+                        help="Boolean indicating if docker cache should be ignored")
     parser.add_argument("component",
                         choices=list(components.keys()),
                         metavar="component",
