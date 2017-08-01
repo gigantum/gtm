@@ -59,10 +59,14 @@ class LabManagerRunner(object):
             os.path.join(os.path.expanduser("~"), "gigantum"): '/mnt/gigantum',
             '/var/run/docker.sock': '/var/run/docker.sock'
         }
+        environment_mapping = {
+            'LOCAL_USER_ID': os.getuid()
+        }
 
         self.docker_client.containers.run(image=self.docker_image,
                                           detach=True,
                                           name=self.image_name,
                                           init=True,
                                           ports=port_mapping,
-                                          volumes=volume_mapping)
+                                          volumes=volume_mapping,
+                                          environment=environment_mapping)
