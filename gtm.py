@@ -115,8 +115,8 @@ if __name__ == '__main__':
     # Setup supported components and commands
     components = {}
     components['labmanager'] = [["build", "Build the LabManager Docker image"],
-                                ["start", "Start a specified Lab Manager Docker image"],
-                                ["stop", "Stop a specific LabManager Docker image"],
+                                ["start", "Start a Lab Manager Docker image"],
+                                ["stop", "Stop a LabManager Docker image"],
                                 ["test", "Run internal tests on a LabManager Docker image"]]
 
     # Prep the help string
