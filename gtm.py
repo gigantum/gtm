@@ -65,9 +65,13 @@ def labmanager_actions(args):
     Returns:
         None
     """
-    if args.action == "build":
-        builder = labmanager.LabManagerBuilder()
+    builder = labmanager.LabManagerBuilder()
+    image_name = builder.image_name
+    if "override_name" in args:
+        if args.override_name:
+            image_name = args.override_name
 
+    if args.action == "build":
         if "name" in args:
             if args.name:
                 builder.image_name = args.override_name
@@ -77,11 +81,6 @@ def labmanager_actions(args):
         # Print Name of image
         print("\n\n\n*** Built LabManager Image: {}".format(builder.image_name))
     elif args.action == "start" or args.action == "stop":
-        image_name = "gigantum/labmanager-ui-builder"
-        if "override_name" in args:
-            if args.override_name:
-                image_name = args.override_name
-
         launcher = labmanager.LabManagerRunner(image_name=image_name, show_output=args.verbose)
 
         if args.action == "start":
@@ -99,11 +98,6 @@ def labmanager_actions(args):
                 print("Error: Docker container by name `{}' is not started.".format(image_name), file=sys.stderr)
                 sys.exit(1)
     elif args.action == "test":
-        image_name = "gigantum/labmanager-ui-builder"
-        if "override_name" in args:
-            if args.override_name:
-                image_name = args.override_name
-
         tester = labmanager.LabManagerTester(image_name)
         tester.test()
     else:
