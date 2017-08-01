@@ -21,6 +21,7 @@ import os
 
 import docker
 
+
 class LabManagerRunner(object):
     """Class to manage the launch (or termination) of a labbook container.
     """
@@ -28,6 +29,7 @@ class LabManagerRunner(object):
     def __init__(self, image_name: str, container_name: str, show_output: bool=False):
         self.docker_client = docker.from_env()
         self.image_name = image_name
+        self.container_name = container_name
         self.docker_image = self.docker_client.images.get(image_name)
         self.show_output = show_output
 
@@ -55,12 +57,10 @@ class LabManagerRunner(object):
         """Launch the docker container. """
 
         port_mapping = {'5000/tcp': 5000}
+        environment_mapping = {'LOCAL_USER_ID': os.getuid()}
         volume_mapping = {
             os.path.join(os.path.expanduser("~"), "gigantum"): '/mnt/gigantum',
             '/var/run/docker.sock': '/var/run/docker.sock'
-        }
-        environment_mapping = {
-            'LOCAL_USER_ID': os.getuid()
         }
 
         self.docker_client.containers.run(image=self.docker_image,

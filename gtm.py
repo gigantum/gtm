@@ -65,8 +65,8 @@ def labmanager_actions(args):
     Returns:
         None
     """
-    builder = labmanager.LabManagerBuilder()
 
+    builder = labmanager.LabManagerBuilder()
     if "override_name" in args:
         if args.override_name:
             builder.image_name = args.override_name
