@@ -19,6 +19,8 @@
 # SOFTWARE.
 import argparse
 import os
+import sys
+
 from gtmlib import labmanager
 
 
@@ -63,9 +65,13 @@ def labmanager_actions(args):
     Returns:
         None
     """
-    if args.action == "build":
-        builder = labmanager.LabManagerBuilder()
 
+    builder = labmanager.LabManagerBuilder()
+    if "override_name" in args:
+        if args.override_name:
+            builder.image_name = args.override_name
+
+    if args.action == "build":
         if "name" in args:
             if args.name:
                 builder.image_name = args.override_name
@@ -74,12 +80,39 @@ def labmanager_actions(args):
 
         # Print Name of image
         print("\n\n\n*** Built LabManager Image: {}".format(builder.image_name))
+    elif args.action == "start" or args.action == "stop":
+        launcher = labmanager.LabManagerRunner(image_name=builder.image_name, container_name=builder.container_name,
+                                               show_output=args.verbose)
+
+        if args.action == "start":
+            if not launcher.is_running:
+                launcher.launch()
+                print("*** Ran: {}".format(builder.image_name))
+            else:
+                print("Error: Docker container by name `{}' is already started.".format(builder.image_name), file=sys.stderr)
+                sys.exit(1)
+        elif args.action == "stop":
+            if launcher.is_running:
+                launcher.stop()
+                print("*** Stopped: {}".format(builder.image_name))
+            else:
+                print("Error: Docker container by name `{}' is not started.".format(builder.image_name), file=sys.stderr)
+                sys.exit(1)
+    elif args.action == "test":
+        tester = labmanager.LabManagerTester(builder.container_name)
+        tester.test()
+    else:
+        print("Error: No action provided.", file=sys.stderr)
+        sys.exit(1)
 
 
 if __name__ == '__main__':
     # Setup supported components and commands
     components = {}
-    components['labmanager'] = [["build", "Build the LabManager Docker image"]]
+    components['labmanager'] = [["build", "Build the LabManager Docker image"],
+                                ["start", "Start a Lab Manager Docker image"],
+                                ["stop", "Stop a LabManager Docker image"],
+                                ["test", "Run internal tests on a LabManager Docker image"]]
 
     # Prep the help string
     help_str = format_component_help(components)

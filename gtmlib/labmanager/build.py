@@ -65,7 +65,7 @@ class LabManagerBuilder(object):
         Returns:
             str
         """
-        return "gigantum.labmanager-{}".format(self._get_current_commit_hash()[:8])
+        return self.image_name.replace("/", ".")
 
     @property
     def image_name(self) -> str:
@@ -81,8 +81,8 @@ class LabManagerBuilder(object):
     @image_name.setter
     def image_name(self, value: str) -> None:
         # Validate
-        if not re.match("^(?!-)(?!.*--)[A-Za-z0-9-]+(?<!-)$", value):
-            raise ValueError("Invalid image name provided. Only A-Za-z0-9- allowed w/ no leading or trailing hyphens.")
+        if not re.match("^(?![-/])(?!.*--)[A-Za-z0-9_/-]+(?<![-/])$", value):
+            raise ValueError("Invalid image name provided. Only A-Za-z0-9/- allowed.")
 
         self._image_name = value
 
@@ -100,8 +100,8 @@ class LabManagerBuilder(object):
     @container_name.setter
     def container_name(self, value: str) -> None:
         # Validate
-        if not re.match("^(?!-)(?!.*--)[A-Za-z0-9_.-]+(?<!-)$", value):
-            raise ValueError("Invalid container name. Only A-Za-z0-9_.- allowed w/ no leading/trailing hyphens.")
+        if not re.match("^(?![-\.])(?!.*--)[A-Za-z0-9_.-]+(?<![-\.])$", value):
+            raise ValueError("Invalid container name. Only A-Za-z0-9._- allowed w/ no leading/trailing hyphens.")
 
         self._container_name = value
 
@@ -215,7 +215,6 @@ class LabManagerBuilder(object):
             [print(ln.decode("UTF-8")) for ln in container.attach(stream=True, logs=True)]
         else:
 
-            import pdb; pdb.set_trace()
             # convert to docker mountable volume name (needed for non-POSIX fs)
             dkr_vol_path = dockerize_volume_path(os.path.join(docker_file_dir, "build"))
 
