@@ -89,14 +89,14 @@ def labmanager_actions(args):
                 launcher.launch()
                 print("*** Ran: {}".format(image_name))
             else:
-                print("Error: Docker container by name `{}' is already started.".format(image_name))
+                print("Error: Docker container by name `{}' is already started.".format(image_name), file=sys.stderr)
                 sys.exit(1)
         elif args.action == "stop":
             if launcher.is_running:
                 launcher.stop()
                 print("*** Stopped: {}".format(image_name))
             else:
-                print("Error: Docker container by name `{}' is not started.".format(image_name))
+                print("Error: Docker container by name `{}' is not started.".format(image_name), file=sys.stderr)
                 sys.exit(1)
     elif args.action == "test":
         image_name = "gigantum/labmanager-ui-builder"
