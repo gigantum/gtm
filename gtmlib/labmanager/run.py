@@ -25,7 +25,7 @@ class LabManagerRunner(object):
     """Class to manage the launch (or termination) of a labbook container.
     """
 
-    def __init__(self, image_name: str, show_output: bool=False):
+    def __init__(self, image_name: str, container_name: str, show_output: bool=False):
         self.docker_client = docker.from_env()
         self.image_name = image_name
         self.docker_image = self.docker_client.images.get(image_name)
@@ -37,7 +37,7 @@ class LabManagerRunner(object):
     @property
     def is_running(self):
         """Return True if a container by given name exists with `docker ps -a`. """
-        return any([container.name == self.image_name for container in self.docker_client.containers.list()])
+        return any([container.name == self.container_name for container in self.docker_client.containers.list()])
 
     def stop(self, cleanup: bool=True):
         """Stop the docker container by this name. """
@@ -45,7 +45,7 @@ class LabManagerRunner(object):
         if not self.is_running:
             raise ValueError("Cannot stop container that is not running.")
         else:
-            containers = list(filter(lambda c: c.name == self.image_name, self.docker_client.containers.list()))
+            containers = list(filter(lambda c: c.name == self.container_name, self.docker_client.containers.list()))
             assert len(containers) == 1
             containers[0].stop()
             if cleanup:
@@ -65,7 +65,7 @@ class LabManagerRunner(object):
 
         self.docker_client.containers.run(image=self.docker_image,
                                           detach=True,
-                                          name=self.image_name,
+                                          name=self.container_name,
                                           init=True,
                                           ports=port_mapping,
                                           volumes=volume_mapping,

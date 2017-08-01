@@ -66,10 +66,10 @@ def labmanager_actions(args):
         None
     """
     builder = labmanager.LabManagerBuilder()
-    image_name = builder.image_name
+
     if "override_name" in args:
         if args.override_name:
-            image_name = args.override_name
+            builder.image_name = args.override_name
 
     if args.action == "build":
         if "name" in args:
@@ -81,24 +81,25 @@ def labmanager_actions(args):
         # Print Name of image
         print("\n\n\n*** Built LabManager Image: {}".format(builder.image_name))
     elif args.action == "start" or args.action == "stop":
-        launcher = labmanager.LabManagerRunner(image_name=image_name, show_output=args.verbose)
+        launcher = labmanager.LabManagerRunner(image_name=builder.image_name, container_name=builder.container_name,
+                                               show_output=args.verbose)
 
         if args.action == "start":
             if not launcher.is_running:
                 launcher.launch()
-                print("*** Ran: {}".format(image_name))
+                print("*** Ran: {}".format(builder.image_name))
             else:
-                print("Error: Docker container by name `{}' is already started.".format(image_name), file=sys.stderr)
+                print("Error: Docker container by name `{}' is already started.".format(builder.image_name), file=sys.stderr)
                 sys.exit(1)
         elif args.action == "stop":
             if launcher.is_running:
                 launcher.stop()
-                print("*** Stopped: {}".format(image_name))
+                print("*** Stopped: {}".format(builder.image_name))
             else:
-                print("Error: Docker container by name `{}' is not started.".format(image_name), file=sys.stderr)
+                print("Error: Docker container by name `{}' is not started.".format(builder.image_name), file=sys.stderr)
                 sys.exit(1)
     elif args.action == "test":
-        tester = labmanager.LabManagerTester(image_name)
+        tester = labmanager.LabManagerTester(builder.container_name)
         tester.test()
     else:
         print("Error: No action provided.", file=sys.stderr)
