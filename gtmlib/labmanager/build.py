@@ -215,7 +215,6 @@ class LabManagerBuilder(object):
             [print(ln.decode("UTF-8")) for ln in container.attach(stream=True, logs=True)]
         else:
 
-            import pdb; pdb.set_trace()
             # convert to docker mountable volume name (needed for non-POSIX fs)
             dkr_vol_path = dockerize_volume_path(os.path.join(docker_file_dir, "build"))
 
