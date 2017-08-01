@@ -51,12 +51,22 @@ class TestLabManagerBuild(object):
         b.container_name = "my-image-43545"
         assert b.container_name == "my-image-43545"
 
+    def test_set_image_name(self):
+        """Test getting and setting the image name only"""
+        b = LabManagerBuilder()
+
+        b.image_name = "repo/my_image-13242"
+        assert b.image_name == "repo/my_image-13242"
+
+        assert b.container_name == "repo.my_image-13242"
+
     def test_get_names(self):
         """Test getting and setting the container and image names"""
         b = LabManagerBuilder()
 
         assert type(b.image_name) == str
         assert type(b.container_name) == str
+        assert b.container_name == b.image_name.replace("/", ".")
 
     def test_invalid_names(self):
         """Method to test setting invalid names"""
@@ -79,6 +89,12 @@ class TestLabManagerBuild(object):
 
         with pytest.raises(ValueError):
             b.container_name = "my-image324!!"
+
+        with pytest.raises(ValueError):
+            b.container_name = "my-image324/"
+
+        with pytest.raises(ValueError):
+            b.container_name = "/my-image324"
 
     def test_build_labmanager(self, setup_build_class):
         """Method to test building a labmanager image"""
