@@ -102,3 +102,4 @@ ENV/
 /.idea
 .DS_Store
 /gtmlib/resources/labmanager-config.yaml
+/.image-build-status.json
