@@ -124,6 +124,8 @@ def baseimage_actions(args):
 
     if args.action == "build":
         builder.build(image_name=image_name, verbose=args.verbose)
+    elif args.action == "publish":
+        builder.publish(image_name=image_name, verbose=args.verbose)
 
     else:
         print("Error: No action provided.", file=sys.stderr)

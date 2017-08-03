@@ -27,8 +27,6 @@ from git import Repo
 import docker
 from docker.errors import ImageNotFound, NotFound
 
-from gtmlib.common import ask_question
-
 
 class BaseImageBuilder(object):
     """Class to manage building base images
@@ -66,10 +64,12 @@ class BaseImageBuilder(object):
         """
         return "{}-{}".format(self._get_current_commit_hash()[:8], str(datetime.utcnow().date()))
 
-    def _add_image_to_tracking_file(self, image_tag: str) -> None:
+    def _update_tracking_file(self, image_tag: str, built: bool, published: bool) -> None:
         """Method to update the status of an image in the tracking file
 
         Args:
+            built(bool): Flag indicating if the image has been built
+            published(bool): Flag indiciating if the image has been published
             image_tag(str): Name of the built image
 
         Returns:
@@ -84,7 +84,7 @@ class BaseImageBuilder(object):
             data = {}
 
         # Update the dictionary setting publish to False
-        data[image_tag] = {"build": True, "publish": False}
+        data[image_tag] = {"build": built, "publish": published}
 
         with open(self.tracking_file, "wt") as f:
             json.dump(data, f)
@@ -101,9 +101,11 @@ class BaseImageBuilder(object):
         client = docker.from_env()
 
         # Generate tags for both the named and latest versions
-        base_tag = "gigantum/{}".format(os.path.basename(os.path.normpath(build_dir)))
+        base_tag = "gigdev/{}".format(os.path.basename(os.path.normpath(build_dir)))
+
+        # TODO: remove temporary namespace reference when moving public
+        #base_tag = "gigantum/{}".format(os.path.basename(os.path.normpath(build_dir)))
         named_tag = "{}:{}".format(base_tag, self._generate_image_tag_suffix())
-        latest_tag = "{}:latest".format(base_tag)
 
         if verbose:
             [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=build_dir,
@@ -113,8 +115,27 @@ class BaseImageBuilder(object):
         else:
             client.images.build(path=build_dir, tag=named_tag, pull=True)
 
-        client.images.build(path=build_dir, tag=latest_tag, pull=True)
         return named_tag
+
+    def _publish_image(self, image_tag: str, verbose=False) -> None:
+        """Private method to push images to the logged in server (e.g hub.docker.com)
+
+        Args:
+            image_tag(str): full image tag to publish
+
+        Returns:
+            None
+        """
+        client = docker.from_env()
+
+        # Split out the image and the tag
+        image, tag = image_tag.split(":")
+
+        if verbose:
+            [print(ln[list(ln.keys())[0]], end='') for ln in client.api.push(image, tag=tag,
+                                                                             stream=True, decode=True)]
+        else:
+            client.images.push(image, tag=tag)
 
     def build(self, image_name: str = None, verbose=False) -> None:
         """Method to build all, or a single image based on the dockerfiles stored within the base-image submodule
@@ -150,7 +171,45 @@ class BaseImageBuilder(object):
             image_tag = self._build_image(build_dir, verbose)
 
             # Update tracking file
-            self._add_image_to_tracking_file(image_tag)
+            self._update_tracking_file(image_tag, built=True, published=False)
+
+            print(" - Complete")
+            print(" - Tag: {}".format(image_tag))
+
+    def publish(self, image_name: str = None, verbose=False) -> None:
+        """Method to publish images and update the Environment Repository
+
+        Args:
+            image_name(str): Name of a base image to build. If omitted all are built
+
+        Returns:
+            None
+        """
+        # Open tracking file
+        if os.path.isfile(self.tracking_file):
+            with open(self.tracking_file, "rt") as f:
+                tracking_data = json.load(f)
+        else:
+            raise ValueError("You must first build images locally before publishing")
+
+        if image_name:
+            # Prune out all but the image to publish
+            if image_name in tracking_data:
+                tracking_data = tracking_data[image_name]
+            else:
+                raise ValueError("Image `{}` not found.".format(image_name))
+
+        num_images = len((list(tracking_data.keys())))
+        for cnt, image_tag in enumerate(list(tracking_data.keys())):
+            print("({}/{}) Publishing Base Image: {}".format(cnt+1, num_images, image_tag))
+
+            # Publish each image
+            self._publish_image(image_tag, verbose)
+
+            # Update YAML def
+
+            # Update tracking file
+            self._update_tracking_file(image_tag, built=True, published=True)
 
             print(" - Complete")
             print(" - Tag: {}".format(image_tag))
