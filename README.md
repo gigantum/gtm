@@ -93,6 +93,7 @@ python gtm.py <optional args> <component> <command>
 Where the supported system **components** are:
 
 - **labmanager** - the client application for interacting with Gigantum LabBooks
+- **base-image** - tooling for building and publishing Base Images maintained by Gigantum
     
 Each system component can have different supported commands based on the actions that are available. They are summarized
 below:
@@ -114,6 +115,21 @@ below:
     - `stop` - stop the LabManager container. If you omit `--override-name` the image name be automatically
      generated using the commit hash of the `gtm` repo. 
     - `test` - run all tests in the LabManager container.
+    
+- **base-image** 
+    - `build` - command to build the Gigantum maintained images. Will automatically tag with a unique tag based on the 
+    current `gtm` repo commit hash and the date (useful for doing regular security updates, but not really changing
+    much).
+    
+        You can provide a name for a single image to build using the `--override-name` argument. If omitted
+    the image will automatically build all available images. Images Dockerfile definitions are stored in
+    [https://github.com/gigantum/base-images](https://github.com/gigantum/base-images)
+    
+    - `publish` - command to publish built images to hub.docker.com. This command will reference a tracking file and
+    only publish images that have been previously built, but not yet published.
+    
+        *Note: Currently images are pushing to `gtmdev` organization on hub.docker.com. You must be in this org to push
+        in the future we'll push to our proper organization*
 
 
 ## Testing
