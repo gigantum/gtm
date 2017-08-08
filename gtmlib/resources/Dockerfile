@@ -18,6 +18,9 @@ RUN cd /opt/labmanager-common/; python3 setup.py install
 # Setup lmcommon config file - should be written by automation before copy
 COPY labmanager-config.yaml /etc/gigantum/labmanager.yaml
 
+# Setup logging config file
+COPY submodules/labmanager-common/lmcommon/logging/logging.json.default /etc/gigantum/logging.json
+
 # Install API deps
 RUN pip3 install -r /opt/labmanager-service-labbook/requirements.txt
 RUN pip3 install uwsgi
