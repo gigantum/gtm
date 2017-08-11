@@ -206,18 +206,18 @@ class LabManagerBuilder(object):
         # Run frontend_build container to build frontend
         container_name = self._ui_build_image_name.replace("/", ".")
         self.prune_container(container_name)
+
+        # convert to docker mountable volume name (needed for non-POSIX fs)
+        dkr_vol_path = dockerize_volume_path(os.path.join(docker_file_dir, "build"))
+
         if show_output:
             container = client.containers.run(self._ui_build_image_name,
                                               name=container_name,
                                               detach=True, init=True,
-                                              volumes={os.path.join(docker_file_dir, "build"):
+                                              volumes={dkr_vol_path:
                                                        {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
             [print(ln.decode("UTF-8")) for ln in container.attach(stream=True, logs=True)]
         else:
-
-            # convert to docker mountable volume name (needed for non-POSIX fs)
-            dkr_vol_path = dockerize_volume_path(os.path.join(docker_file_dir, "build"))
-
             # launch the ui build container
             client.containers.run(self._ui_build_image_name,
                                   name=container_name, detach=False, init=True,

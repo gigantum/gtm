@@ -18,8 +18,11 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 import os
+import platform
 
 import docker
+
+from gtmlib.common import dockerize_volume_path
 
 
 class LabManagerRunner(object):
@@ -57,12 +60,24 @@ class LabManagerRunner(object):
         """Launch the docker container. """
         working_dir = os.path.join(os.path.expanduser("~"), "gigantum")
         port_mapping = {'5000/tcp': 5000}
-        environment_mapping = {'LOCAL_USER_ID': os.getuid(),
+
+        # windows docker has several eccentricities
+        #    no user ids
+        #    //var for the socker mapping
+        #    //C/a/b/ format for volume C:\\a\\b
+        if platform.system() == 'Windows':
+            environment_mapping = {'HOST_WORK_DIR': working_dir}
+            volume_mapping = {
+                dockerize_volume_path(working_dir): '/mnt/gigantum',
+                '//var/run/docker.sock': '/var/run/docker.sock'
+            }
+        else:
+            environment_mapping = {'LOCAL_USER_ID': os.getuid(),
                                'HOST_WORK_DIR': working_dir}
-        volume_mapping = {
-            working_dir: '/mnt/gigantum',
-            '/var/run/docker.sock': '/var/run/docker.sock'
-        }
+            volume_mapping = {
+                working_dir: '/mnt/gigantum',
+                '/var/run/docker.sock': '/var/run/docker.sock'
+            }
 
         self.docker_client.containers.run(image=self.docker_image,
                                           detach=True,
