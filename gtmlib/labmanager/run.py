@@ -66,8 +66,7 @@ class LabManagerRunner(object):
         #    //var for the socker mapping
         #    //C/a/b/ format for volume C:\\a\\b
         if platform.system() == 'Windows':
-            environment_mapping = {'LOCAL_USER_ID': os.getuid(),
-                               'HOST_WORK_DIR': working_dir}
+            environment_mapping = {'HOST_WORK_DIR': working_dir}
             volume_mapping = {
                 dockerize_volume_path(working_dir): '/mnt/gigantum',
                 '//var/run/docker.sock': '/var/run/docker.sock'
