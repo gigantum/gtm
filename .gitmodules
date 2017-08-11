@@ -7,3 +7,6 @@
 [submodule "gtmlib/resources/frontend_build/submodules/labmanager-ui"]
 	path = gtmlib/resources/frontend_build/submodules/labmanager-ui
 	url = https://github.com/gigantum/labmanager-ui.git
+[submodule "gtmlib/resources/base_images"]
+	path = gtmlib/resources/base_images
+	url = https://github.com/gigantum/base-images.git

@@ -218,7 +218,7 @@ class LabManagerBuilder(object):
             # convert to docker mountable volume name (needed for non-POSIX fs)
             dkr_vol_path = dockerize_volume_path(os.path.join(docker_file_dir, "build"))
 
-            # launcht he ui build container
+            # launch the ui build container
             client.containers.run(self._ui_build_image_name,
                                   name=container_name, detach=False, init=True,
                                   volumes={dkr_vol_path: {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})

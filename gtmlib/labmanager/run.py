@@ -58,7 +58,7 @@ class LabManagerRunner(object):
 
     def launch(self):
         """Launch the docker container. """
-
+        working_dir = os.path.join(os.path.expanduser("~"), "gigantum")
         port_mapping = {'5000/tcp': 5000}
 
         # windows docker has several eccentricities
@@ -66,15 +66,17 @@ class LabManagerRunner(object):
         #    //var for the socker mapping
         #    //C/a/b/ format for volume C:\\a\\b
         if platform.system() == 'Windows':
-            environment_mapping = {'LOCAL_USER_ID': 1000}
-            volume_mapping = {dockerize_volume_path(os.path.join(os.path.expanduser("~"), "gigantum")): 
-                '/mnt/gigantum',
+            environment_mapping = {'LOCAL_USER_ID': os.getuid(),
+                               'HOST_WORK_DIR': working_dir}
+            volume_mapping = {
+                dockerize_volume_path(working_dir): '/mnt/gigantum',
                 '//var/run/docker.sock': '/var/run/docker.sock'
             }
         else:
-            environment_mapping = {'LOCAL_USER_ID': os.getuid()}
-            volume_mapping = {os.path.join(os.path.expanduser("~"), "gigantum"): 
-                '/mnt/gigantum',
+            environment_mapping = {'LOCAL_USER_ID': os.getuid(),
+                               'HOST_WORK_DIR': working_dir}
+            volume_mapping = {
+                working_dir: '/mnt/gigantum',
                 '/var/run/docker.sock': '/var/run/docker.sock'
             }
 
