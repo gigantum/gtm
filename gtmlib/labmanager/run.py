@@ -55,11 +55,12 @@ class LabManagerRunner(object):
 
     def launch(self):
         """Launch the docker container. """
-
+        working_dir = os.path.join(os.path.expanduser("~"), "gigantum")
         port_mapping = {'5000/tcp': 5000}
-        environment_mapping = {'LOCAL_USER_ID': os.getuid()}
+        environment_mapping = {'LOCAL_USER_ID': os.getuid(),
+                               'HOST_WORK_DIR': working_dir}
         volume_mapping = {
-            os.path.join(os.path.expanduser("~"), "gigantum"): '/mnt/gigantum',
+            working_dir: '/mnt/gigantum',
             '/var/run/docker.sock': '/var/run/docker.sock'
         }
 
