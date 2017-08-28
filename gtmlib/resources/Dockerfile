@@ -54,7 +54,7 @@ ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 EXPOSE 5000
 
 # Start redis
-CMD ["service", "redis", "start"]
+CMD ["service", "redis-server", "start"]
 
 # Typically start by firing up uwsgi+nginx, but use CMD so it's easy to override
 CMD ["/usr/bin/supervisord", "--nodaemon"]
