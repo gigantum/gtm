@@ -53,5 +53,8 @@ ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 # Expose Ports
 EXPOSE 5000
 
+# Start redis
+CMD ["service", "redis", "start"]
+
 # Typically start by firing up uwsgi+nginx, but use CMD so it's easy to override
 CMD ["/usr/bin/supervisord", "--nodaemon"]
