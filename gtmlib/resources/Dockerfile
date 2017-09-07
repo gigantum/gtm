@@ -4,7 +4,7 @@ MAINTAINER Gigantum <hello@gigantum.io>
 # Install system level dependencies
 RUN apt-get -y update; apt-get install -y software-properties-common; add-apt-repository ppa:jonathonf/python-3.6
 RUN apt-get -y upgrade;
-RUN apt-get -y update; apt-get -y install build-essential python3.6-dev libleveldb-dev libleveldb1v5 git nginx supervisor curl gosu
+RUN apt-get -y update; apt-get -y install build-essential python3.6-dev libleveldb-dev libleveldb1v5 git nginx supervisor curl gosu redis-server
 
 # Install pip with PPA 3.6 installation
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
