@@ -19,6 +19,9 @@ COPY submodules/labmanager-service-labbook /opt/labmanager-service-labbook
 # Install lmcommon
 RUN cd /opt/labmanager-common/; python3.6 setup.py install
 
+# Start redis-server
+RUN service redis-server start
+
 # Setup lmcommon config file - should be written by automation before copy
 COPY labmanager-config.yaml /etc/gigantum/labmanager.yaml
 
