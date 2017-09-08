@@ -37,7 +37,10 @@ COPY nginx_ui.conf /etc/nginx/sites-enabled/
 COPY nginx_api.conf /etc/nginx/sites-enabled/
 RUN rm /etc/nginx/sites-enabled/default
 
-# Setup Redis
+# Setup Redis 
+# The two exports are for character encoding - workers will not run without it.
+RUN export LC_ALL=C.UTF-8
+RUN export LANG=C.UTF-8
 RUN mkdir /opt/redis
 COPY redis.conf /opt/redis/redis.conf
 
