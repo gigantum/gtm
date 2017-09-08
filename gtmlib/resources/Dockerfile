@@ -38,7 +38,8 @@ COPY nginx_api.conf /etc/nginx/sites-enabled/
 RUN rm /etc/nginx/sites-enabled/default
 
 # Setup Redis
-COPY redis.conf /opt/redis.conf
+RUN mkdir /opt/redis
+COPY redis.conf /opt/redis/redis.conf
 
 # Setup Supervisord to launch both uwsgi and nginx
 RUN mkdir -p /opt/log/supervisor; mkdir -p /opt/log/nginx; mkdir -p /opt/run; mkdir -p /opt/nginx; nginx; nginx -s reload; nginx -s quit
