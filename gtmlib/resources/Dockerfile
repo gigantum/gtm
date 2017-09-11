@@ -4,7 +4,7 @@ MAINTAINER Gigantum <hello@gigantum.io>
 # Install system level dependencies
 RUN apt-get -y update; apt-get install -y software-properties-common; add-apt-repository ppa:jonathonf/python-3.6
 RUN apt-get -y upgrade;
-RUN apt-get -y update; apt-get -y install build-essential python3.6-dev libleveldb-dev libleveldb1v5 git nginx supervisor curl gosu
+RUN apt-get -y update; apt-get -y install build-essential python3.6-dev libleveldb-dev libleveldb1v5 git nginx supervisor curl gosu redis-server
 
 # Install pip with PPA 3.6 installation
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
@@ -36,6 +36,11 @@ COPY frontend_build/build/ /var/www/
 COPY nginx_ui.conf /etc/nginx/sites-enabled/
 COPY nginx_api.conf /etc/nginx/sites-enabled/
 RUN rm /etc/nginx/sites-enabled/default
+
+# Setup Redis 
+# The two exports are for character encoding - workers will not run without it.
+RUN mkdir /opt/redis
+COPY redis.conf /opt/redis/redis.conf
 
 # Setup Supervisord to launch both uwsgi and nginx
 RUN mkdir -p /opt/log/supervisor; mkdir -p /opt/log/nginx; mkdir -p /opt/run; mkdir -p /opt/nginx; nginx; nginx -s reload; nginx -s quit
