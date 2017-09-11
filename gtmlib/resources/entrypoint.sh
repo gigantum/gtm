@@ -10,6 +10,10 @@ echo "Starting with UID : $USER_ID"
 useradd --shell /bin/bash -u $USER_ID -o -c "" -m giguser
 export HOME=/home/giguser
 
+# BVB - Required to get rq to run.
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
 # Setup everything to allow giguser to run nginx and git
 chown -R giguser:root /opt/
 chown -R giguser:root /var/log/nginx/
