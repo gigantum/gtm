@@ -21,6 +21,8 @@ chown -R giguser:root /var/lib/nginx/
 chown giguser:root /var/lock/nginx.lock
 chown giguser:root /run/nginx.pid
 chown giguser:root /run/docker.sock
+chown -R giguser:root /usr/share/elasticsearch
+chown -R giguser:root /etc/elasticsearch
 chmod 777 /var/run/docker.sock
 cp /root/.gitconfig /home/giguser/
 

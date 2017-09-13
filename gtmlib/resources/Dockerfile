@@ -4,7 +4,7 @@ MAINTAINER Gigantum <hello@gigantum.io>
 # Install system level dependencies
 RUN apt-get -y update; apt-get install -y software-properties-common; add-apt-repository ppa:jonathonf/python-3.6
 RUN apt-get -y upgrade;
-RUN apt-get -y update; apt-get -y install build-essential python3.6-dev libleveldb-dev libleveldb1v5 git nginx supervisor curl gosu redis-server
+RUN apt-get -y update; apt-get -y install build-essential python3.6-dev libleveldb-dev libleveldb1v5 git nginx supervisor curl gosu redis-server wget
 
 # Install pip with PPA 3.6 installation
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
@@ -41,6 +41,16 @@ RUN rm /etc/nginx/sites-enabled/default
 # The two exports are for character encoding - workers will not run without it.
 RUN mkdir /opt/redis
 COPY redis.conf /opt/redis/redis.conf
+
+# Setup ElasticSearch
+RUN apt-get -y install apt-transport-https openjdk-8-jre openjdk-8-jdk
+RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add -
+RUN echo "deb https://artifacts.elastic.co/packages/5.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-5.x.list
+RUN apt-get -y update && apt-get -y install elasticsearch
+
+# elasticsearch client -- needs to be pulled because of bug fix. 
+#  this can be put in requirements.txt once they integrate https://github.com/elastic/elasticsearch-py/pull/628
+RUN pip3.6 install git+https://github.com/elastic/elasticsearch-py.git
 
 # Setup Supervisord to launch both uwsgi and nginx
 RUN mkdir -p /opt/log/supervisor; mkdir -p /opt/log/nginx; mkdir -p /opt/run; mkdir -p /opt/nginx; nginx; nginx -s reload; nginx -s quit
