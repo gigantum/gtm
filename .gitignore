@@ -103,3 +103,4 @@ ENV/
 .DS_Store
 /gtmlib/resources/labmanager-config.yaml
 /.image-build-status.json
+/gtmlib/resources/labmanager_resources/labmanager-config.yaml
