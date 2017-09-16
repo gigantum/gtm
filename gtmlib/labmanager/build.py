@@ -20,6 +20,7 @@
 import os
 import re
 from pkg_resources import resource_filename
+import platform
 
 from git import Repo
 import docker
@@ -159,7 +160,7 @@ class LabManagerBuilder(object):
             pass
 
     def build_image(self, show_output: bool=False) -> None:
-        """Method to build the Docker Image
+        """Method to build the LabManager Docker Image
 
         Returns:
             None
@@ -176,61 +177,68 @@ class LabManagerBuilder(object):
                 # User said no
                 raise ValueError("User aborted build due to duplicate image name.")
 
-        print("\n*** Building frontend build image {}, please wait...\n\n".format(self._ui_build_image_name))
-
         # Rebuild front-end image to get latest sw if desired
         build_ui_container = True
         if self.image_exists(self._ui_build_image_name):
-            if ask_question("Frontend build container already exists. Do you want to rebuild it?".format(self.image_name)):
+            if ask_question("\nFrontend build container already exists. Do you want to rebuild it?".format(self.image_name)):
+                print("*** Building frontend build image {}, please wait...\n".format(self._ui_build_image_name))
                 # Remove so you can rebuild
                 self.remove_image(self._ui_build_image_name)
             else:
                 build_ui_container = False
 
-        docker_file_dir = os.path.expanduser(os.path.join(resource_filename("gtmlib", "resources"), "frontend_build"))
+        docker_build_dir = os.path.expanduser(resource_filename("gtmlib", "resources"))
+        frontend_build_output_dir = os.path.join(docker_build_dir, 'frontend_resources', 'build')
         if build_ui_container:
             # Make sure build dir exists
-            if not os.path.isdir(os.path.join(docker_file_dir, "build")):
-                os.makedirs(os.path.join(docker_file_dir, "build"))
+            if not os.path.exists(frontend_build_output_dir):
+                os.makedirs(frontend_build_output_dir)
 
             # Build frontend image
             if show_output:
-                [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=docker_file_dir,
+                [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=docker_build_dir,
+                                                                                  dockerfile='Dockerfile_frontend_build',
                                                                                   tag=self._ui_build_image_name,
                                                                                   pull=True, rm=True,
                                                                                   stream=True, decode=True)]
             else:
-                client.images.build(path=docker_file_dir, tag=self._ui_build_image_name, pull=True, rm=True)
+                client.images.build(path=docker_build_dir, dockerfile='Dockerfile_frontend_build',
+                                    tag=self._ui_build_image_name, pull=True, rm=True)
 
-        print("\n\n*** Compiling frontend...\n\n")
-        # Run frontend_build container to build frontend
+        # Compile frontend application into gtmlib/resources/frontend_resources/build
+        print("\n*** Compiling frontend application...\n\n")
         container_name = self._ui_build_image_name.replace("/", ".")
         self.prune_container(container_name)
 
         # convert to docker mountable volume name (needed for non-POSIX fs)
-        dkr_vol_path = dockerize_volume_path(os.path.join(docker_file_dir, "build"))
+        dkr_vol_path = dockerize_volume_path(frontend_build_output_dir)
+
+        if platform.system() == 'Windows':
+            environment_vars = {}
+        else:
+            environment_vars = {'LOCAL_USER_ID': os.getuid()}
 
         if show_output:
             container = client.containers.run(self._ui_build_image_name,
                                               name=container_name,
                                               detach=True, init=True,
+                                              environment=environment_vars,
                                               volumes={dkr_vol_path:
                                                        {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
             [print(ln.decode("UTF-8")) for ln in container.attach(stream=True, logs=True)]
         else:
             # launch the ui build container
             client.containers.run(self._ui_build_image_name,
-                                  name=container_name, detach=False, init=True,
+                                  name=container_name, detach=False, init=True, environment=environment_vars,
                                   volumes={dkr_vol_path: {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
 
-        # Get Dockerfile directory
-        docker_file_dir = os.path.expanduser(os.path.join(resource_filename("gtmlib", "resources")))
-
+        # Build LabManager container
         # Write updated config file
-        base_config_file = os.path.join(docker_file_dir, "submodules", 'labmanager-common', 'lmcommon', 'configuration',
-                                        'config', 'labmanager.yaml.default')
-        overwrite_config_file = os.path.join(docker_file_dir, 'labmanager-config-override.yaml')
-        final_config_file = os.path.join(docker_file_dir, 'labmanager-config.yaml')
+        base_config_file = os.path.join(docker_build_dir, "submodules", 'labmanager-common', 'lmcommon',
+                                        'configuration', 'config', 'labmanager.yaml.default')
+        overwrite_config_file = os.path.join(docker_build_dir, 'labmanager_resources',
+                                             'labmanager-config-override.yaml')
+        final_config_file = os.path.join(docker_build_dir, 'labmanager_resources', 'labmanager-config.yaml')
 
         with open(base_config_file, "rt") as cf:
             base_data = yaml.load(cf)
@@ -249,10 +257,11 @@ class LabManagerBuilder(object):
         # Build image
         print("\n\n*** Building LabManager image `{}`, please wait...\n\n".format(self.image_name))
         if show_output:
-            [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=docker_file_dir,
+            [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=docker_build_dir,
+                                                                              dockerfile='Dockerfile_labmanager',
                                                                               tag=self.image_name,
                                                                               pull=True, rm=True,
                                                                               stream=True, decode=True)]
         else:
-            client.images.build(path=docker_file_dir, tag=self.image_name, pull=True)
-
+            client.images.build(path=docker_build_dir, dockerfile='Dockerfile_labmanager',
+                                tag=self.image_name, pull=True)

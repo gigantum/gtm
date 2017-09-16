@@ -3,7 +3,7 @@ MAINTAINER Gigantum <hello@gigantum.io>
 
 # Install system level dependencies
 RUN apt-get -y update; apt-get -y upgrade
-RUN apt-get -y install build-essential git curl autotools-dev autoconf automake python-dev
+RUN apt-get -y install build-essential git curl autotools-dev autoconf automake python-dev gosu
 
 # Install node
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
@@ -22,7 +22,13 @@ RUN cd /opt/labmanager-ui; npm install
 ENV PORT 5000
 
 # Copy in build script
-COPY build_script.sh /opt/labmanager-ui
+COPY frontend_resources/build_script.sh /opt/labmanager-ui
+RUN chmod u+x /opt/labmanager-ui/build_script.sh
+
+# Setup entrypoint to configure permissions properly
+COPY frontend_resources/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod u+x /usr/local/bin/entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Run build script on container start
 CMD ["/bin/bash", "/opt/labmanager-ui/build_script.sh"]
