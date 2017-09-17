@@ -82,13 +82,19 @@ def labmanager_actions(args):
         # Print Name of image
         print("\n\n\n*** Built LabManager Image: {}".format(builder.image_name))
     elif args.action == "start" or args.action == "stop":
-        launcher = labmanager.LabManagerRunner(image_name=builder.image_name, container_name=builder.container_name,
+        # If not a tagged version, force to latest
+        if ":" not in builder.image_name:
+            image_name = "{}:latest".format(builder.image_name)
+        else:
+            image_name = builder.image_name
+
+        launcher = labmanager.LabManagerRunner(image_name=image_name, container_name=builder.container_name,
                                                show_output=args.verbose)
 
         if args.action == "start":
             if not launcher.is_running:
                 launcher.launch()
-                print("*** Ran: {}".format(builder.image_name))
+                print("*** Ran: {}".format(image_name))
             else:
                 print("Error: Docker container by name `{}' is already started.".format(builder.image_name), file=sys.stderr)
                 sys.exit(1)

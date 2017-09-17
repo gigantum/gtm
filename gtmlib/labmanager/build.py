@@ -58,7 +58,15 @@ class LabManagerBuilder(object):
         Returns:
             str
         """
-        return "gigantum/labmanager-{}".format(self._get_current_commit_hash()[:8])
+        return "gigantum/labmanager"
+
+    def get_image_tag(self) -> str:
+        """Method to generate a named tag for the Docker Image
+
+        Returns:
+            str
+        """
+        return self._get_current_commit_hash()[:8]
 
     def _generate_container_name(self) -> str:
         """Method to generate a name for the Docker container
@@ -168,10 +176,11 @@ class LabManagerBuilder(object):
         client = docker.from_env()
 
         # Check if image exists
-        if self.image_exists(self.image_name):
-            if ask_question("Image `{}` already exists. Do you wish to rebuild it?".format(self.image_name)):
+        named_image = "{}:{}".format(self.image_name, self.get_image_tag())
+        if self.image_exists(named_image):
+            if ask_question("Image `{}` already exists. Do you wish to rebuild it?".format(named_image)):
                 # Image found. Make sure container isn't running.
-                self.prune_container(self.image_name)
+                self.prune_container(named_image)
                 pass
             else:
                 # User said no
@@ -254,14 +263,23 @@ class LabManagerBuilder(object):
         with open(final_config_file, "wt") as cf:
             cf.write(yaml.dump(base_data, default_flow_style=False))
 
+        # Image Labels
+        labels = {'io.gigantum.app': 'labmanager',
+                  'io.gigantum.maintainer.email': 'hello@gigantum.io'}
+
         # Build image
         print("\n\n*** Building LabManager image `{}`, please wait...\n\n".format(self.image_name))
         if show_output:
             [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=docker_build_dir,
                                                                               dockerfile='Dockerfile_labmanager',
-                                                                              tag=self.image_name,
+                                                                              tag=named_image,
+                                                                              labels=labels,
                                                                               pull=True, rm=True,
                                                                               stream=True, decode=True)]
         else:
             client.images.build(path=docker_build_dir, dockerfile='Dockerfile_labmanager',
-                                tag=self.image_name, pull=True)
+                                tag=named_image,
+                                pull=True, labels=labels)
+
+        # Tag with `latest` for auto-detection of image on launch
+        client.api.tag(named_image, 'gigantum/labmanager', 'latest')
