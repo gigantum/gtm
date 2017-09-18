@@ -22,6 +22,7 @@ import os
 import sys
 
 from gtmlib import labmanager
+from gtmlib import dev
 from gtmlib import baseimage
 
 
@@ -113,6 +114,34 @@ def labmanager_actions(args):
         sys.exit(1)
 
 
+def labmanager_dev_actions(args):
+    """Method to provide logic and perform actions for the LabManager-Dev component
+
+    Args:
+        args(Namespace): Parsed arguments
+
+    Returns:
+        None
+    """
+    builder = dev.LabManagerDevBuilder()
+    if "override_name" in args:
+        if args.override_name:
+            builder.image_name = args.override_name
+
+    if args.action == "build-backend":
+        if "name" in args:
+            if args.name:
+                builder.image_name = args.override_name
+
+        builder.build_image(show_output=args.verbose)
+
+        # Print Name of image
+        print("\n\n\n*** Built LabManager Dev Image: {}".format(builder.image_name))
+    else:
+        print("Error: No action provided.", file=sys.stderr)
+        sys.exit(1)
+
+
 def baseimage_actions(args):
     """Method to provide logic and perform actions for the base-image component
 
@@ -134,7 +163,7 @@ def baseimage_actions(args):
         builder.publish(image_name=image_name, verbose=args.verbose)
 
     else:
-        print("Error: No action provided.", file=sys.stderr)
+        print("Error: Unsupported action provided: {}".format(args.action), file=sys.stderr)
         sys.exit(1)
 
 
@@ -145,6 +174,8 @@ if __name__ == '__main__':
                                 ["start", "Start a Lab Manager Docker image"],
                                 ["stop", "Stop a LabManager Docker image"],
                                 ["test", "Run internal tests on a LabManager Docker image"]]
+
+    components['labmanager-dev'] = [["build-backend", "Build the LabManager Development Docker image"], ]
     components['base-image'] = [["build", "Build all available base images"],
                                 ["publish", "Publish all available base images to docker hub"]]
 
@@ -181,6 +212,9 @@ if __name__ == '__main__':
     if args.component == "labmanager":
         # LabManager Selected
         labmanager_actions(args)
+    elif args.component == "labmanager-dev":
+        # Base Image Selected
+        labmanager_dev_actions(args)
     elif args.component == "base-image":
         # Base Image Selected
         baseimage_actions(args)
