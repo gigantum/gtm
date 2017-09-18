@@ -15,14 +15,16 @@ export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
 # Setup everything to allow giguser to run nginx and git
-chown -R giguser:root /opt/
+chown -R giguser:root /var/www
 chown giguser:root /run/docker.sock
 chmod 777 /var/run/docker.sock
 cp /root/.gitconfig /home/giguser/
 
 # symlink the pre-compiled application into the code repo so it runs
-mkdir /mnt/repos/labmanager-ui/build
-ln -s /var/www /mnt/repos/labmanager-ui/build
+ln -s /var/www /opt/project/gtmlib/resources/submodules/labmanager-ui/build
+
+# Setup python path
+export PYTHONPATH=$PYTHONPATH:/opt/project/gtmlib/resources/submodules/labmanager-common
 
 # Start supervisord
 /usr/bin/supervisord &
