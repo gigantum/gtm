@@ -4,12 +4,11 @@ MAINTAINER Gigantum <hello@gigantum.io>
 # Install system level dependencies
 RUN apt-get -y update; apt-get install -y software-properties-common; add-apt-repository ppa:jonathonf/python-3.6
 RUN apt-get -y upgrade;
-RUN apt-get -y update; apt-get -y install build-essential autotools-dev autoconf automake python3.6-dev libleveldb-dev libleveldb1v5 git nginx supervisor curl gosu redis-server python-dev
+RUN apt-get -y update; apt-get -y install build-essential autotools-dev autoconf automake python3.6-dev libleveldb-dev libleveldb1v5 git supervisor curl gosu redis-server python-dev
 
 # Install node
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
 RUN apt-get -y install nodejs
-RUN npm install -g serve
 
 # Build Watchman
 RUN git clone https://github.com/facebook/watchman.git; cd watchman; git checkout v4.7.0; ./autogen.sh; ./configure; make; make install
@@ -35,17 +34,14 @@ COPY labmanager_dev_resources/labmanager-config.yaml /etc/gigantum/labmanager.ya
 COPY submodules/labmanager-common/lmcommon/logging/logging.json.default /etc/gigantum/logging.json
 
 # Make working dir and code mount points
-RUN mkdir -p /mnt/gigantum; mkdir -p /mnt/repos
-
-# Copy pre-compiled frontend app into container, will symlink to repo directory at container runtime
-COPY frontend_resources/build/ /var/www/
+RUN mkdir -p /mnt/gigantum
 
 # Setup Redis
 RUN mkdir /opt/redis
 COPY labmanager_resources/redis.conf /opt/redis/redis.conf
 
-# Setup Supervisord to launch both uwsgi and nginx
-RUN mkdir -p /opt/log/supervisor; mkdir -p /opt/log/nginx; mkdir -p /opt/run; mkdir -p /opt/nginx; nginx; nginx -s reload; nginx -s quit
+# Setup Supervisord to launch redis and qrq
+RUN mkdir -p /opt/log/supervisor; mkdir -p /opt/run;
 COPY labmanager_resources/supervisord_base.conf /etc/supervisor/supervisord.conf
 COPY labmanager_dev_resources/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 

@@ -15,7 +15,7 @@ export LC_ALL=C.UTF-8
 export LANG=C.UTF-8
 
 # Setup everything to allow giguser to build UI components and run git
-chown -R giguser:root /var/www
+chown -R giguser:root /mnt/gigantum
 chown giguser:root /run/docker.sock
 chmod 777 /var/run/docker.sock
 cp /root/.gitconfig /home/giguser/
