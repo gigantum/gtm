@@ -22,6 +22,7 @@ import os
 import sys
 
 from gtmlib import labmanager
+from gtmlib import dev
 from gtmlib import baseimage
 
 
@@ -82,13 +83,19 @@ def labmanager_actions(args):
         # Print Name of image
         print("\n\n\n*** Built LabManager Image: {}".format(builder.image_name))
     elif args.action == "start" or args.action == "stop":
-        launcher = labmanager.LabManagerRunner(image_name=builder.image_name, container_name=builder.container_name,
+        # If not a tagged version, force to latest
+        if ":" not in builder.image_name:
+            image_name = "{}:latest".format(builder.image_name)
+        else:
+            image_name = builder.image_name
+
+        launcher = labmanager.LabManagerRunner(image_name=image_name, container_name=builder.container_name,
                                                show_output=args.verbose)
 
         if args.action == "start":
             if not launcher.is_running:
                 launcher.launch()
-                print("*** Ran: {}".format(builder.image_name))
+                print("*** Ran: {}".format(image_name))
             else:
                 print("Error: Docker container by name `{}' is already started.".format(builder.image_name), file=sys.stderr)
                 sys.exit(1)
@@ -102,6 +109,38 @@ def labmanager_actions(args):
     elif args.action == "test":
         tester = labmanager.LabManagerTester(builder.container_name)
         tester.test()
+    else:
+        print("Error: No action provided.", file=sys.stderr)
+        sys.exit(1)
+
+
+def labmanager_dev_actions(args):
+    """Method to provide logic and perform actions for the LabManager-Dev component
+
+    Args:
+        args(Namespace): Parsed arguments
+
+    Returns:
+        None
+    """
+    builder = dev.LabManagerDevBuilder()
+    if "override_name" in args:
+        if args.override_name:
+            builder.image_name = args.override_name
+
+    if args.action == "build-backend":
+        if "name" in args:
+            if args.name:
+                builder.image_name = args.override_name
+
+        builder.build_image(show_output=args.verbose)
+
+        # Print Name of image
+        print("\n\n\n*** Built LabManager Dev Image: {}".format(builder.image_name))
+
+    if args.action == "compose":
+        composer = dev.Compose()
+        composer.generate_backend_yaml_file()
     else:
         print("Error: No action provided.", file=sys.stderr)
         sys.exit(1)
@@ -128,7 +167,7 @@ def baseimage_actions(args):
         builder.publish(image_name=image_name, verbose=args.verbose)
 
     else:
-        print("Error: No action provided.", file=sys.stderr)
+        print("Error: Unsupported action provided: {}".format(args.action), file=sys.stderr)
         sys.exit(1)
 
 
@@ -139,6 +178,9 @@ if __name__ == '__main__':
                                 ["start", "Start a Lab Manager Docker image"],
                                 ["stop", "Stop a LabManager Docker image"],
                                 ["test", "Run internal tests on a LabManager Docker image"]]
+
+    components['labmanager-dev'] = [["build-backend", "Build the LabManager Development Docker image"],
+                                    ["compose", "Generate Docker compose file for PyCharm"]]
     components['base-image'] = [["build", "Build all available base images"],
                                 ["publish", "Publish all available base images to docker hub"]]
 
@@ -175,6 +217,9 @@ if __name__ == '__main__':
     if args.component == "labmanager":
         # LabManager Selected
         labmanager_actions(args)
+    elif args.component == "labmanager-dev":
+        # Base Image Selected
+        labmanager_dev_actions(args)
     elif args.component == "base-image":
         # Base Image Selected
         baseimage_actions(args)
