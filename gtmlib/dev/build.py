@@ -20,6 +20,7 @@
 import os
 from pkg_resources import resource_filename
 import platform
+import uuid
 
 import docker
 import yaml
@@ -59,60 +60,7 @@ class LabManagerDevBuilder(LabManagerBuilder):
                 # User said no
                 raise ValueError("User aborted build due to duplicate image name.")
 
-        # Rebuild front-end image to get latest sw if desired
-        build_ui_container = True
-        if self.image_exists(self._ui_build_image_name):
-            if ask_question("\nFrontend build container already exists. Do you want to rebuild it?".format(self.image_name)):
-                print("*** Building frontend build image {}, please wait...\n".format(self._ui_build_image_name))
-                # Remove so you can rebuild
-                self.remove_image(self._ui_build_image_name)
-            else:
-                build_ui_container = False
-
         docker_build_dir = os.path.expanduser(resource_filename("gtmlib", "resources"))
-        frontend_build_output_dir = os.path.join(docker_build_dir, 'frontend_resources', 'build')
-        if build_ui_container:
-            # Make sure build dir exists
-            if not os.path.exists(frontend_build_output_dir):
-                os.makedirs(frontend_build_output_dir)
-
-            # Build frontend image
-            if show_output:
-                [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=docker_build_dir,
-                                                                                  dockerfile='Dockerfile_frontend_build',
-                                                                                  tag=self._ui_build_image_name,
-                                                                                  pull=True, rm=True,
-                                                                                  stream=True, decode=True)]
-            else:
-                client.images.build(path=docker_build_dir, dockerfile='Dockerfile_frontend_build',
-                                    tag=self._ui_build_image_name, pull=True, rm=True)
-
-        # Compile frontend application into gtmlib/resources/frontend_resources/build
-        print("\n*** Compiling frontend application...\n\n")
-        container_name = self._ui_build_image_name.replace("/", ".")
-        self.prune_container(container_name)
-
-        # convert to docker mountable volume name (needed for non-POSIX fs)
-        dkr_vol_path = dockerize_volume_path(frontend_build_output_dir)
-
-        if platform.system() == 'Windows':
-            environment_vars = {}
-        else:
-            environment_vars = {'LOCAL_USER_ID': os.getuid()}
-
-        if show_output:
-            container = client.containers.run(self._ui_build_image_name,
-                                              name=container_name,
-                                              detach=True, init=True,
-                                              environment=environment_vars,
-                                              volumes={dkr_vol_path:
-                                                       {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
-            [print(ln.decode("UTF-8")) for ln in container.attach(stream=True, logs=True)]
-        else:
-            # launch the ui build container
-            client.containers.run(self._ui_build_image_name,
-                                  name=container_name, detach=False, init=True, environment=environment_vars,
-                                  volumes={dkr_vol_path: {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
 
         # Build LabManager container
         # Write updated config file
@@ -156,3 +104,34 @@ class LabManagerDevBuilder(LabManagerBuilder):
 
         # Tag with `latest` for auto-detection of image on launch
         client.api.tag(named_image, self._generate_image_name(), 'latest')
+
+        ui_app_dir = os.path.join(docker_build_dir, "submodules", 'labmanager-ui')
+        if os.path.exists(os.path.join(ui_app_dir, 'node_modules')):
+            if ask_question("Do you wish to re-install node packages?"):
+                # Use container to run npm install into the labmanager-ui repo
+                print("\n*** Installing node packages to run UI in debug mode...this will take awhile...\n\n")
+                ui_app_dir = os.path.join(docker_build_dir, "submodules", 'labmanager-ui')
+                container_name = uuid.uuid4().hex
+
+                # convert to docker mountable volume name (needed for non-POSIX fs)
+                dkr_vol_path = dockerize_volume_path(ui_app_dir)
+
+                if platform.system() == 'Windows':
+                    environment_vars = {}
+                else:
+                    environment_vars = {'LOCAL_USER_ID': os.getuid()}
+
+                command = 'sh -c "cd /mnt/build && npm install && npm run relay"'
+
+                # launch the dev container
+                client.containers.run(self.image_name,
+                                      command=command,
+                                      name=container_name,
+                                      detach=False,
+                                      init=True,
+                                      environment=environment_vars,
+                                      volumes={dkr_vol_path: {'bind': '/mnt/build', 'mode': 'rw'}})
+
+                print(" - Done.")
+
+

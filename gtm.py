@@ -137,6 +137,10 @@ def labmanager_dev_actions(args):
 
         # Print Name of image
         print("\n\n\n*** Built LabManager Dev Image: {}".format(builder.image_name))
+
+    if args.action == "compose":
+        composer = dev.Compose()
+        composer.generate_backend_yaml_file()
     else:
         print("Error: No action provided.", file=sys.stderr)
         sys.exit(1)
@@ -175,7 +179,8 @@ if __name__ == '__main__':
                                 ["stop", "Stop a LabManager Docker image"],
                                 ["test", "Run internal tests on a LabManager Docker image"]]
 
-    components['labmanager-dev'] = [["build-backend", "Build the LabManager Development Docker image"], ]
+    components['labmanager-dev'] = [["build-backend", "Build the LabManager Development Docker image"],
+                                    ["compose", "Generate Docker compose file for PyCharm"]]
     components['base-image'] = [["build", "Build all available base images"],
                                 ["publish", "Publish all available base images to docker hub"]]
 

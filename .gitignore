@@ -105,3 +105,4 @@ ENV/
 /.image-build-status.json
 /gtmlib/resources/labmanager_resources/labmanager-config.yaml
 /gtmlib/resources/labmanager_dev_resources/labmanager-config.yaml
+/gtmlib/resources/labmanager_dev_resources/docker-compose-backend.yml
