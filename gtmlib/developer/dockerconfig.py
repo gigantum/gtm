@@ -170,8 +170,8 @@ class DockerConfig(object):
 
             files = os.listdir(src_run_config_dir)
             for file in files:
-                file = os.path.join(src_run_config_dir, file)
-                if os.path.isfile(file):
-                    shutil.copy(file, run_config_dir)
+                src_file = os.path.join(src_run_config_dir, file)
+                if os.path.isfile(src_file):
+                    shutil.copy(src_file, os.path.join(run_config_dir, file))
 
             print("Run configurations copied to `.idea/runConfigurations`. Restart PyCharm if running")
