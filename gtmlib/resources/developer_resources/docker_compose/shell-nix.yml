@@ -1,0 +1,17 @@
+version: '2'
+services:
+  labmanager:
+    image: gigantum/labmanager-dev:latest
+    entrypoint: /usr/local/bin/entrypoint.sh
+    command: /bin/bash
+    ports:
+     - "5000:5000"
+     - "3000:3000"
+    volumes:
+    - {% WORKING_DIR %}:/mnt/gigantum
+    - /var/run/docker.sock:/var/run/docker.sock
+    - {% GTM_DIR %}:/opt/project/
+    environment:
+     - SET_PERMISSIONS=/opt/project/gtmlib/resources/submodules
+     - LOCAL_USER_ID={% USER_ID %}
+     - HOST_WORK_DIR={% WORKING_DIR %}

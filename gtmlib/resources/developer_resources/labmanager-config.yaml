@@ -1,0 +1,14 @@
+core:
+  logging_config: /etc/gigantum/logging.json
+  team_mode: false
+environment:
+  repo_url:
+  - https://github.com/gig-dev/environment-components.git
+flask:
+  DEBUG: true
+  TESTING: true
+  allow_cors: true
+from: null
+git:
+  backend: filesystem
+  working_directory: /mnt/gigantum

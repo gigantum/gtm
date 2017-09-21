@@ -1,0 +1,81 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Run lmcommon ALL TESTS" type="tests" factoryName="py.test">
+    <option name="INTERPRETER_OPTIONS" value="" />
+    <option name="PARENT_ENVS" value="true" />
+    <envs />
+    <option name="SDK_HOME" value="" />
+    <option name="WORKING_DIRECTORY" value="" />
+    <option name="IS_MODULE_SDK" value="true" />
+    <option name="ADD_CONTENT_ROOTS" value="true" />
+    <option name="ADD_SOURCE_ROOTS" value="true" />
+    <module name="gtm" />
+    <EXTENSION ID="DockerContainerSettingsRunConfigurationExtension">
+      <option name="envVars">
+        <list>
+          <DockerEnvVarImpl>
+            <option name="name" value="LOCAL_USER_ID" />
+            <option name="value" value="501" />
+          </DockerEnvVarImpl>
+          <DockerEnvVarImpl>
+            <option name="name" value="HOST_WORK_DIR" />
+            <option name="value" value="$USER_HOME$/gigantum/" />
+          </DockerEnvVarImpl>
+        </list>
+      </option>
+      <option name="extraHosts">
+        <list />
+      </option>
+      <option name="links">
+        <list />
+      </option>
+      <option name="networkDisabled" value="false" />
+      <option name="networkMode" value="bridge" />
+      <option name="portBindings">
+        <list>
+          <DockerPortBindingImpl>
+            <option name="containerPort" value="5000" />
+            <option name="hostIp" value="localhost" />
+            <option name="hostPort" value="5000" />
+            <option name="protocol" value="tcp" />
+          </DockerPortBindingImpl>
+          <DockerPortBindingImpl>
+            <option name="containerPort" value="3000" />
+            <option name="hostIp" value="localhost" />
+            <option name="hostPort" value="3000" />
+            <option name="protocol" value="tcp" />
+          </DockerPortBindingImpl>
+        </list>
+      </option>
+      <option name="publishAllPorts" value="false" />
+      <option name="version" value="1" />
+      <option name="volumeBindings">
+        <list>
+          <DockerVolumeBindingImpl>
+            <option name="containerPath" value="/opt/project" />
+            <option name="editable" value="true" />
+            <option name="hostPath" value="$PROJECT_DIR$" />
+            <option name="readOnly" value="false" />
+          </DockerVolumeBindingImpl>
+          <DockerVolumeBindingImpl>
+            <option name="containerPath" value="/mnt/gigantum" />
+            <option name="editable" value="true" />
+            <option name="hostPath" value="$USER_HOME$/gigantum" />
+            <option name="readOnly" value="false" />
+          </DockerVolumeBindingImpl>
+          <DockerVolumeBindingImpl>
+            <option name="containerPath" value="/var/run/docker.sock" />
+            <option name="editable" value="true" />
+            <option name="hostPath" value="/var/run/docker.sock" />
+            <option name="readOnly" value="false" />
+          </DockerVolumeBindingImpl>
+        </list>
+      </option>
+    </EXTENSION>
+    <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
+    <option name="_new_keywords" value="&quot;&quot;" />
+    <option name="_new_additionalArguments" value="&quot;&quot;" />
+    <option name="_new_target" value="&quot;$PROJECT_DIR$/gtmlib/resources/submodules/labmanager-common/lmcommon&quot;" />
+    <option name="_new_targetType" value="&quot;PATH&quot;" />
+    <method />
+  </configuration>
+</component>

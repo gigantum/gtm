@@ -4,7 +4,7 @@ MAINTAINER Gigantum <hello@gigantum.io>
 # Install system level dependencies
 RUN apt-get -y update; apt-get install -y software-properties-common; add-apt-repository ppa:jonathonf/python-3.6
 RUN apt-get -y upgrade;
-RUN apt-get -y update; apt-get -y install build-essential autotools-dev autoconf automake python3.6-dev libleveldb-dev libleveldb1v5 git supervisor curl gosu redis-server python-dev
+RUN apt-get -y update; apt-get -y install build-essential autotools-dev autoconf automake python3.6-dev libleveldb-dev libleveldb1v5 git supervisor curl gosu redis-server python-dev vim emacs zip
 
 # Install node
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
@@ -28,13 +28,13 @@ RUN pip3.6 install -r /opt/labmanager-common_requirements.txt
 RUN pip3.6 install -r /opt/labmanager-service-labbook_requirements.txt
 
 # Setup lmcommon config file - should be written by automation before copy
-COPY labmanager_dev_resources/labmanager-config.yaml /etc/gigantum/labmanager.yaml
+COPY developer_resources/labmanager-config.yaml /etc/gigantum/labmanager.yaml
 
 # Setup logging config file
 COPY submodules/labmanager-common/lmcommon/logging/logging.json.default /etc/gigantum/logging.json
 
 # Make working dir and code mount points
-RUN mkdir -p /mnt/gigantum
+RUN mkdir -p /mnt/gigantum; mkdir /opt/node_build
 
 # Setup Redis
 RUN mkdir /opt/redis
@@ -43,9 +43,9 @@ COPY labmanager_resources/redis.conf /opt/redis/redis.conf
 # Setup Supervisord to launch redis and qrq
 RUN mkdir -p /opt/log/supervisor; mkdir -p /opt/run;
 COPY labmanager_resources/supervisord_base.conf /etc/supervisor/supervisord.conf
-COPY labmanager_dev_resources/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY developer_resources/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
-COPY labmanager_dev_resources/entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY developer_resources/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod u+x /usr/local/bin/entrypoint.sh
 
 # Expose Ports

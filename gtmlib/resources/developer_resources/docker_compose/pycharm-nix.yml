@@ -1,8 +1,10 @@
+# PYCHARM-DEV
 version: '2'
 services:
   labmanager:
     image: gigantum/labmanager-dev:latest
     entrypoint: /usr/local/bin/entrypoint.sh
+    command: /bin/bash
     ports:
      - "5000:5000"
      - "3000:3000"

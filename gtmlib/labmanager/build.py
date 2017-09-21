@@ -21,6 +21,7 @@ import os
 import re
 from pkg_resources import resource_filename
 import platform
+import shutil
 
 from git import Repo
 import docker
@@ -199,6 +200,11 @@ class LabManagerBuilder(object):
         docker_build_dir = os.path.expanduser(resource_filename("gtmlib", "resources"))
         frontend_build_output_dir = os.path.join(docker_build_dir, 'frontend_resources', 'build')
         if build_ui_container:
+            # Delete node_modules dir if it exists locally (due to container based dev)
+            #if os.path.exists(os.path.join(docker_build_dir, 'submodules', 'labmanager-ui', 'node_modules')):
+            #    print(" - Removing node_modules directory.")
+            #    shutil.rmtree(os.path.join(docker_build_dir, 'submodules', 'labmanager-ui', 'node_modules'))
+
             # Make sure build dir exists
             if not os.path.exists(frontend_build_output_dir):
                 os.makedirs(frontend_build_output_dir)

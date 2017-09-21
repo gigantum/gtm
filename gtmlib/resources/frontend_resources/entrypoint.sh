@@ -11,8 +11,8 @@ useradd --shell /bin/bash -u $USER_ID -o -c "" -m giguser
 export HOME=/home/giguser
 
 # Allow user to write to the build dir with the proper permissions
-chown giguser:root /opt/labmanager-ui/
-chown -R giguser:root /opt/labmanager-ui/build
-chown -R giguser:root /opt/labmanager-ui/src
+cd /opt/labmanager-ui/
+chown giguser:root -R $(ls | awk '{if($1 != "node_modules"){ print $1 }}')
+
 
 exec gosu giguser "$@"
