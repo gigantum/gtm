@@ -166,7 +166,7 @@ class DockerConfig(object):
         # Import run configs if needed
         if import_run_configs:
             src_run_config_dir = os.path.join(self.resources_root, 'pycharm_run_configurations')
-            run_config_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), '.idea', 'runConfiguraions')
+            run_config_dir = os.path.join(self.gtm_root, '.idea', 'runConfigurations')
 
             files = os.listdir(src_run_config_dir)
             for file in files:
@@ -174,4 +174,4 @@ class DockerConfig(object):
                 if os.path.isfile(file):
                     shutil.copy(file, run_config_dir)
 
-            print("Run configurations copied to `.idea/runConfiguration`. Restart PyCharm if running")
+            print("Run configurations copied to `.idea/runConfigurations`. Restart PyCharm if running")
