@@ -93,8 +93,8 @@ class DockerUtil(object):
             self._verify_shell_config()
 
             print("Running docker up. CTRL+C to exit.")
-            cmd = 'docker-compose -f {} run --service-ports --rm labmanager'.format(os.path.join(self._docker_compose_dir(),
-                                                                                   'docker-compose.yml'))
+            cmd = 'docker-compose -f {} run --service-ports labmanager'.format(os.path.join(self._docker_compose_dir(),
+                                                                               'docker-compose.yml'))
             try:
                 process = subprocess.run(shlex.split(cmd),
                                          stdout=subprocess.PIPE,
@@ -123,6 +123,7 @@ class DockerUtil(object):
             sys.exit(1)
 
         if self._docker_compose_exists():
-            command = "cd {} && docker exec -it {} /bin/bash".format(self._docker_compose_dir(), container_id)
+            override_command = '/bin/bash -c \"cd /opt/project; echo \'-- Run (source ./setup.sh) to switch to giguser context\'; /bin/bash"'
+            command = 'cd {} && docker exec -it {} {}'.format(self._docker_compose_dir(), container_id, override_command)
             os.system(command)
 

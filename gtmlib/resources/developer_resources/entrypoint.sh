@@ -22,6 +22,9 @@ if [ -z "$WINDOWS_HOST" ]; then
     #chown -R giguser:root /mnt/gigantum
 
     chown giguser:root /var/run/docker.sock
+    chown -R giguser:root /opt/run
+    chown -R giguser:root /opt/log
+    chown -R giguser:root /opt/redis
     chmod 777 /var/run/docker.sock
     cp /root/.gitconfig /home/giguser/
 fi
@@ -49,7 +52,7 @@ if [ -n "$NPM_INSTALL" ]; then
 fi
 
 # Start supervisord
-/usr/bin/supervisord &
+gosu giguser /usr/bin/supervisord &
 
 # su to giguser if not on Windows
 if [ -z "$WINDOWS_HOST" ]; then
