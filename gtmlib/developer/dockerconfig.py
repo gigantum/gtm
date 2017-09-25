@@ -155,12 +155,11 @@ class DockerConfig(object):
         # Generate supervisord.conf
         if is_backend:
             supervisord_file = os.path.join(self.resources_root, 'supervisord_backend.conf')
-
-            if not use_pycharm:
-                # Write shell helper script
-                self.write_helper_script(working_dir)
         else:
             supervisord_file = os.path.join(self.resources_root, 'supervisord_frontend.conf')
+
+        # Write shell helper script
+        self.write_helper_script(working_dir)
 
         shutil.copyfile(supervisord_file, os.path.join(self.resources_root, 'supervisord.conf'))
 
