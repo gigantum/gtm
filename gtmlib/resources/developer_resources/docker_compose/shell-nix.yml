@@ -9,9 +9,11 @@ services:
      - "3000:3000"
     volumes:
     - {% WORKING_DIR %}:/mnt/gigantum
+    - {% SHARE_DIR %}:/mnt/share
     - /var/run/docker.sock:/var/run/docker.sock
     - {% GTM_DIR %}:/opt/project/
     environment:
      - SET_PERMISSIONS=/opt/project/gtmlib/resources/submodules
      - LOCAL_USER_ID={% USER_ID %}
      - HOST_WORK_DIR={% WORKING_DIR %}
+    network_mode: "bridge"

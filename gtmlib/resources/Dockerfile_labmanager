@@ -4,7 +4,7 @@ MAINTAINER Gigantum <hello@gigantum.io>
 # Install system level dependencies
 RUN apt-get -y update; apt-get install -y software-properties-common; add-apt-repository ppa:jonathonf/python-3.6
 RUN apt-get -y upgrade;
-RUN apt-get -y update; apt-get -y install build-essential python3.6-dev libleveldb-dev libleveldb1v5 git nginx supervisor curl gosu redis-server
+RUN apt-get -y update; apt-get -y install build-essential python3.6-dev libleveldb-dev libleveldb1v5 git nginx supervisor curl gosu redis-server vim
 
 # Install pip with PPA 3.6 installation
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
@@ -17,7 +17,7 @@ COPY submodules/labmanager-common /opt/labmanager-common
 COPY submodules/labmanager-service-labbook /opt/labmanager-service-labbook
 
 # Install lmcommon
-RUN cd /opt/labmanager-common/; python3.6 setup.py install
+RUN cd /opt/labmanager-common/; pip3.6 install -r /opt/labmanager-common/requirements.txt; python3.6 setup.py install
 
 # Setup lmcommon config file - should be written by automation before copy
 COPY labmanager_resources/labmanager-config.yaml /etc/gigantum/labmanager.yaml

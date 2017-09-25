@@ -115,7 +115,7 @@ class DockerUtil(object):
 
         container_id = None
         for container in containers:
-            if "labmanager_run" in container.name:
+            if "_labmanager_" in container.name:
                 container_id = container.id
 
         if not container_id:

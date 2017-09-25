@@ -5,7 +5,7 @@
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
     </envs>
-    <option name="SDK_HOME" value="docker-compose://[$PROJECT_DIR$/gtmlib/resources/labmanager_dev_resources/docker-compose-backend.yml]:labmanager/python3.6" />
+    <option name="SDK_HOME" value="docker-compose://[$PROJECT_DIR$/gtmlib/resources/developer_resources/docker-compose.yml]:labmanager/python3.6" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/gtmlib/resources/submodules/labmanager-service-labbook" />
     <option name="IS_MODULE_SDK" value="false" />
     <option name="ADD_CONTENT_ROOTS" value="true" />

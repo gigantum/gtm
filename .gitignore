@@ -110,3 +110,4 @@ ENV/
 /gtmlib/resources/developer_resources/supervisord.conf
 /gtmlib/resources/submodules/setup.sh
 /setup.sh
+/gtmlib/resources/developer_resources/labmanager-config.yaml

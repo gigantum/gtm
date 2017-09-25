@@ -80,6 +80,7 @@ class DockerConfig(object):
 
         # Replace values
         data = data.replace('{% WORKING_DIR %}', working_dir)
+        data = data.replace('{% SHARE_DIR %}', os.path.join(working_dir, '.labmanager', 'share'))
 
         if not is_windows:
             data = data.replace('{% USER_ID %}', str(uid))

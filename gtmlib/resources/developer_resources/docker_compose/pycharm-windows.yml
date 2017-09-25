@@ -10,7 +10,9 @@ services:
      - "3000:3000"
     volumes:
     - {% WORKING_DIR %}:/mnt/gigantum
+    - {% SHARE_DIR %}:/mnt/share
     - /var/run/docker.sock:/var/run/docker.sock
     environment:
      - WINDOWS_HOST=1
      - HOST_WORK_DIR={% WORKING_DIR %}
+    network_mode: "bridge"

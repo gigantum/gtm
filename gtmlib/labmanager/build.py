@@ -22,6 +22,7 @@ import re
 from pkg_resources import resource_filename
 import platform
 import shutil
+import glob
 
 from git import Repo
 import docker
@@ -60,6 +61,18 @@ class LabManagerBuilder(object):
             str
         """
         return "gigantum/labmanager"
+
+    def _remove_pyc(self, directory: str) -> None:
+        """Method to remove all pyc files recursively
+
+        Args:
+            directory(str) Root directory to walk
+
+        Returns:
+
+        """
+        for filename in glob.glob('{}/**/*.pyc'.format(directory), recursive=True):
+                os.remove(filename)
 
     def get_image_tag(self) -> str:
         """Method to generate a named tag for the Docker Image
@@ -199,12 +212,13 @@ class LabManagerBuilder(object):
 
         docker_build_dir = os.path.expanduser(resource_filename("gtmlib", "resources"))
         frontend_build_output_dir = os.path.join(docker_build_dir, 'frontend_resources', 'build')
-        if build_ui_container:
-            # Delete node_modules dir if it exists locally (due to container based dev)
-            #if os.path.exists(os.path.join(docker_build_dir, 'submodules', 'labmanager-ui', 'node_modules')):
-            #    print(" - Removing node_modules directory.")
-            #    shutil.rmtree(os.path.join(docker_build_dir, 'submodules', 'labmanager-ui', 'node_modules'))
 
+        # Delete node_modules dir if it exists locally (due to container based dev)
+        if os.path.exists(os.path.join(docker_build_dir, 'submodules', 'labmanager-ui', 'node_modules')):
+            print(" - Removing node_modules directory.")
+            shutil.rmtree(os.path.join(docker_build_dir, 'submodules', 'labmanager-ui', 'node_modules'))
+
+        if build_ui_container:
             # Make sure build dir exists
             if not os.path.exists(frontend_build_output_dir):
                 os.makedirs(frontend_build_output_dir)
@@ -272,6 +286,11 @@ class LabManagerBuilder(object):
         # Image Labels
         labels = {'io.gigantum.app': 'labmanager',
                   'io.gigantum.maintainer.email': 'hello@gigantum.io'}
+
+        # Delete .pyc files in case dev tools used on something not ubuntu before building
+        self._remove_pyc(os.path.join(docker_build_dir, "submodules", 'labmanager-common', 'lmcommon'))
+        self._remove_pyc(os.path.join(docker_build_dir, "submodules", 'labmanager-service-labbook', 'lmsrvcore'))
+        self._remove_pyc(os.path.join(docker_build_dir, "submodules", 'labmanager-service-labbook', 'lmsrvlabbook'))
 
         # Build image
         print("\n\n*** Building LabManager image `{}`, please wait...\n\n".format(self.image_name))
