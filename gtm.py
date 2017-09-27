@@ -22,6 +22,7 @@ import os
 import sys
 
 from gtmlib import labmanager
+from gtmlib import developer
 from gtmlib import baseimage
 
 
@@ -80,15 +81,21 @@ def labmanager_actions(args):
         builder.build_image(show_output=args.verbose)
 
         # Print Name of image
-        print("\n\n\n*** Built LabManager Image: {}".format(builder.image_name))
+        print("\n\n*** Built LabManager Image: {}\n".format(builder.image_name))
     elif args.action == "start" or args.action == "stop":
-        launcher = labmanager.LabManagerRunner(image_name=builder.image_name, container_name=builder.container_name,
+        # If not a tagged version, force to latest
+        if ":" not in builder.image_name:
+            image_name = "{}:latest".format(builder.image_name)
+        else:
+            image_name = builder.image_name
+
+        launcher = labmanager.LabManagerRunner(image_name=image_name, container_name=builder.container_name,
                                                show_output=args.verbose)
 
         if args.action == "start":
             if not launcher.is_running:
                 launcher.launch()
-                print("*** Ran: {}".format(builder.image_name))
+                print("*** Ran: {}".format(image_name))
             else:
                 print("Error: Docker container by name `{}' is already started.".format(builder.image_name), file=sys.stderr)
                 sys.exit(1)
@@ -103,7 +110,45 @@ def labmanager_actions(args):
         tester = labmanager.LabManagerTester(builder.container_name)
         tester.test()
     else:
-        print("Error: No action provided.", file=sys.stderr)
+        print("Error: Unsupported action provided: {}".format(args.action), file=sys.stderr)
+        sys.exit(1)
+
+
+def developer_actions(args):
+    """Method to provide logic and perform actions for the developer component
+
+    Args:
+        args(Namespace): Parsed arguments
+
+    Returns:
+        None
+    """
+    if args.action == "build":
+        builder = developer.LabManagerDevBuilder()
+        if "override_name" in args:
+            if args.override_name:
+                builder.image_name = args.override_name
+
+        if "name" in args:
+            if args.name:
+                builder.image_name = args.override_name
+
+        builder.build_image(show_output=args.verbose)
+
+        # Print Name of image
+        print("\n\n*** Built LabManager Dev Image: {}\n".format(builder.image_name))
+
+    elif args.action == "setup":
+        dc = developer.DockerConfig()
+        dc.configure()
+    elif args.action == "run":
+        du = developer.DockerUtil()
+        du.run()
+    elif args.action == "attach":
+        du = developer.DockerUtil()
+        du.attach()
+    else:
+        print("Error: Unsupported action provided: {}".format(args.action), file=sys.stderr)
         sys.exit(1)
 
 
@@ -128,7 +173,7 @@ def baseimage_actions(args):
         builder.publish(image_name=image_name, verbose=args.verbose)
 
     else:
-        print("Error: No action provided.", file=sys.stderr)
+        print("Error: Unsupported action provided: {}".format(args.action), file=sys.stderr)
         sys.exit(1)
 
 
@@ -139,6 +184,12 @@ if __name__ == '__main__':
                                 ["start", "Start a Lab Manager Docker image"],
                                 ["stop", "Stop a LabManager Docker image"],
                                 ["test", "Run internal tests on a LabManager Docker image"]]
+
+    components['developer'] = [["setup", "Generate Docker configuration for development"],
+                               ["build", "Build the LabManager Development Docker image based on `setup` config"],
+                               ["run", "Start the LabManager dev container (not applicable to PyCharm configs)"],
+                               ["attach", "Attach to the running dev container"]]
+
     components['base-image'] = [["build", "Build all available base images"],
                                 ["publish", "Publish all available base images to docker hub"]]
 
@@ -175,6 +226,9 @@ if __name__ == '__main__':
     if args.component == "labmanager":
         # LabManager Selected
         labmanager_actions(args)
+    elif args.component == "developer":
+        # Base Image Selected
+        developer_actions(args)
     elif args.component == "base-image":
         # Base Image Selected
         baseimage_actions(args)
