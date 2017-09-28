@@ -59,24 +59,32 @@ class LabManagerRunner(object):
     def launch(self):
         """Launch the docker container. """
         working_dir = os.path.join(os.path.expanduser("~"), "gigantum")
+        share_mnt_dir = os.path.join(working_dir, '.labmanager', 'share')
         port_mapping = {'5000/tcp': 5000}
+
+        # Make sure share dir exists
+        if not os.path.exists(share_mnt_dir):
+            os.makedirs(share_mnt_dir)
 
         # windows docker has several eccentricities
         #    no user ids
         #    //var for the socker mapping
         #    //C/a/b/ format for volume C:\\a\\b
         if platform.system() == 'Windows':
-            environment_mapping = {'HOST_WORK_DIR': working_dir}
+            environment_mapping = {'HOST_WORK_DIR': working_dir,
+                                   'WINDOWS_HOST': 1}
             volume_mapping = {
-                dockerize_volume_path(working_dir): '/mnt/gigantum',
-                '//var/run/docker.sock': '/var/run/docker.sock'
+                dockerize_volume_path(working_dir): {'bind': '/mnt/gigantum', 'mode': 'rw'},
+                '//var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'},
+                dockerize_volume_path(share_mnt_dir): {'bind': '/mnt/share', 'mode': 'rw'}
             }
         else:
             environment_mapping = {'LOCAL_USER_ID': os.getuid(),
-                               'HOST_WORK_DIR': working_dir}
+                                   'HOST_WORK_DIR': working_dir}
             volume_mapping = {
-                working_dir: '/mnt/gigantum',
-                '/var/run/docker.sock': '/var/run/docker.sock'
+                working_dir: {'bind': '/mnt/gigantum', 'mode': 'rw'},
+                '/var/run/docker.sock': {'bind': '/var/run/docker.sock', 'mode': 'rw'},
+                share_mnt_dir: {'bind': '/mnt/share', 'mode': 'rw'}
             }
 
         self.docker_client.containers.run(image=self.docker_image,

@@ -17,7 +17,6 @@
 # LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
-
 import docker
 
 
@@ -42,8 +41,11 @@ class LabManagerTester(object):
 
         Note: Throws ValueError if the container does not exist.
         """
+        # TODO: Insert jupyter environment variable until generalized
+        env_var = {'JUPYTER_RUNTIME_DIR': '/mnt/share/jupyter/runtime'}
 
         container = self._retrieve_container()
-        [print(p.decode('UTF-8'), end='') for p in container.exec_run("py.test /opt", stream=True)]
+        [print(p.decode('UTF-8'), end='') for p in container.exec_run("py.test /opt", stream=True,
+                                                                      environment=env_var)]
 
         # TODO - Capture return code to see if tests pass - this is difficult to do.
