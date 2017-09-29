@@ -17,23 +17,24 @@ export LANG=C.UTF-8
 # TODO: Generalize Dev Env Vars
 export JUPYTER_RUNTIME_DIR=/mnt/share/jupyter/runtime
 
-# Set permissions for container-container share
-chown -R giguser:root /mnt/share/
-
-# Setup everything to allow giguser to run nginx and git
-chown -R giguser:root /opt/log
-chown -R giguser:root /opt/nginx
-chown -R giguser:root /opt/redis
-chown -R giguser:root /opt/run
-chown -R giguser:root /var/lib/nginx/
-chown -R giguser:root /var/log/nginx/
-chown giguser:root /var/lock/nginx.lock
-chown giguser:root /run/nginx.pid
-chown giguser:root /var/run/docker.sock
-chmod 777 /var/run/docker.sock
-cp /root/.gitconfig /home/giguser/
-
 if [ -z "$WINDOWS_HOST" ]; then
+
+    # Set permissions for container-container share
+    chown -R giguser:root /mnt/share/
+
+    # Setup everything to allow giguser to run nginx and git
+    chown -R giguser:root /opt/log
+    chown -R giguser:root /opt/nginx
+    chown -R giguser:root /opt/redis
+    chown -R giguser:root /opt/run
+    chown -R giguser:root /var/lib/nginx/
+    chown -R giguser:root /var/log/nginx/
+    chown giguser:root /var/lock/nginx.lock
+    chown giguser:root /run/nginx.pid
+    chown giguser:root /var/run/docker.sock
+    chmod 777 /var/run/docker.sock
+    cp /root/.gitconfig /home/giguser/
+
     # Not a windows host
     exec gosu giguser "$@"
 else
