@@ -82,6 +82,9 @@ def labmanager_actions(args):
 
         # Print Name of image
         print("\n\n*** Built LabManager Image: {}\n".format(builder.image_name))
+    elif args.action == "run":
+        print("Error: Unsupported action provided: `{}`. Did you mean `start`?".format(args.action), file=sys.stderr)
+        sys.exit(1)
     elif args.action == "start" or args.action == "stop":
         # If not a tagged version, force to latest
         if ":" not in builder.image_name:
@@ -110,7 +113,7 @@ def labmanager_actions(args):
         tester = labmanager.LabManagerTester(builder.container_name)
         tester.test()
     else:
-        print("Error: Unsupported action provided: {}".format(args.action), file=sys.stderr)
+        print("Error: Unsupported action provided: `{}`".format(args.action), file=sys.stderr)
         sys.exit(1)
 
 
@@ -144,6 +147,9 @@ def developer_actions(args):
     elif args.action == "run":
         du = developer.DockerUtil()
         du.run()
+    elif args.action == "relay":
+        builder = developer.LabManagerDevBuilder()
+        builder.run_relay()
     elif args.action == "attach":
         du = developer.DockerUtil()
         du.attach()
@@ -187,6 +193,7 @@ if __name__ == '__main__':
 
     components['developer'] = [["setup", "Generate Docker configuration for development"],
                                ["build", "Build the LabManager Development Docker image based on `setup` config"],
+                               ["relay", "Re-compile relay queries. Runs automatically on a build command."],
                                ["run", "Start the LabManager dev container (not applicable to PyCharm configs)"],
                                ["attach", "Attach to the running dev container"]]
 
