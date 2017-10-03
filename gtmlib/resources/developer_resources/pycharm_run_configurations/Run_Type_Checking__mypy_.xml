@@ -13,7 +13,7 @@
     <module name="gtm" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" enabled="false" sample_coverage="true" runner="coverage.py" />
     <option name="SCRIPT_NAME" value="" />
-    <option name="PARAMETERS" value="-m mypy . --ignore-missing-imports" />
+    <option name="PARAMETERS" value="-m mypy . --ignore-missing-imports --strict-optional" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <method />
