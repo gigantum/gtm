@@ -152,7 +152,10 @@ below:
         
         If you are using shell-based dev, run this command to fire up the dev container. The `gtm/gtmlib/resources/submodules`
         directory will automatically mount to `/opt/project` with the correct permissions.
-     
+        
+    - `relay` - Run `relay-compiler` to re-generate relay queries. A convienence method for frontend development.
+    The `build` command runs this command at the end of the build process automatically.
+        
     - `attach` - Drop into a shell in the running dev container. 
     
         This command will start a shell inside the running dev container as root. Run `cd /opt/project` to drop into the

@@ -45,6 +45,12 @@ class LabManagerTester(object):
         env_var = {'JUPYTER_RUNTIME_DIR': '/mnt/share/jupyter/runtime'}
 
         container = self._retrieve_container()
+
+        # Run the type-checker on lmcommon
+        [print(p.decode('UTF-8'), end='') for p in container.exec_run(
+            "python3.6 -m mypy /opt/labmanager-common --ignore-missing-imports")]
+
+        # Run all py.test unit tests
         [print(p.decode('UTF-8'), end='') for p in container.exec_run("py.test /opt", stream=True,
                                                                       environment=env_var)]
 
