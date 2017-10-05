@@ -207,7 +207,7 @@ class BaseImageBuilder(object):
             # Publish each image
             self._publish_image(image_tag, verbose)
 
-            # Update YAML def
+            # TODO Update YAML def
 
             # Update tracking file
             self._update_tracking_file(image_tag, built=True, published=True)
