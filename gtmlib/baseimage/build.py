@@ -149,13 +149,14 @@ class BaseImageBuilder(object):
         build_dirs = []
         if not image_name:
             # Find all images to build in the base_image submodule ref
-            docker_file_dir = os.path.join(resource_filename('gtmlib', 'resources'), 'base_images')
+            docker_file_dir = os.path.join(resource_filename('gtmlib', 'resources'), 'submodules', 'base-images')
             build_dirs = glob.glob(os.path.join(docker_file_dir,
                                                 "*"))
             build_dirs = [x for x in build_dirs if os.path.isdir(x) is True]
 
         else:
-            possible_build_dir = os.path.join(resource_filename('gtmlib', 'resources'), 'base_images', image_name)
+            possible_build_dir = os.path.join(resource_filename('gtmlib', 'resources'), 'submodules',
+                                              'base-images', image_name)
             if os.path.isdir(possible_build_dir):
                 build_dirs.append(possible_build_dir)
             else:
