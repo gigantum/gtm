@@ -19,20 +19,12 @@ if [ -z "$WINDOWS_HOST" ]; then
 
     # DMK - only need to run permissions once.
     # Setup permissions to allow giguser to build UI components and run git
-    #chown -R giguser:root /mnt/gigantum
-
-    chown giguser:root /var/run/docker.sock
     chown -R giguser:root /opt/run
     chown -R giguser:root /opt/log
     chown -R giguser:root /opt/redis
-    chmod 777 /var/run/docker.sock
     cp /root/.gitconfig /home/giguser/
+
 fi
-
-
-# Set permissions for container-container share
-chown -R giguser:root /mnt/share/
-
 
 if [ -n "$SET_PERMISSIONS" ]; then
     # This is a *nix config running shell dev so you need to setup perms on the mounted code (skipping node packages)
@@ -44,11 +36,21 @@ if [ -n "$SET_PERMISSIONS" ]; then
 fi
 
 if [ -n "$NPM_INSTALL" ]; then
-    # Building relay so fix permissions
-   chown -R giguser:root /opt/node_build
-   chown giguser:root /mnt/build
-   cd /mnt/build
+    # Building relay so fix permissions and ignore share dir since not in operating mode
+   chown -R giguser:root /mnt/node_build
+   chown giguser:root /mnt/src
+   cd /mnt/src
    chown giguser:root -R $(ls | awk '{if($1 != "node_modules"){ print $1 }}')
+else
+    # If here, in "operational mode", not building or configuring
+    # Set permissions for container-container share
+    chown -R giguser:root /mnt/share/
+
+    if [ -z "$WINDOWS_HOST" ]; then
+        # Setup docker sock perms in the container
+        chown giguser:root /var/run/docker.sock
+        chmod 777 /var/run/docker.sock
+    fi
 fi
 
 # Start supervisord
