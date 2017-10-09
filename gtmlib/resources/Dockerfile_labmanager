@@ -52,7 +52,7 @@ RUN chmod u+x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Expose Ports
-EXPOSE 5000
+EXPOSE 10000
 
 # Typically start by firing up uwsgi+nginx, but use CMD so it's easy to override
 CMD ["/usr/bin/supervisord", "--nodaemon"]
