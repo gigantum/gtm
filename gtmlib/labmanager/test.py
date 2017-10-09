@@ -46,11 +46,15 @@ class LabManagerTester(object):
 
         container = self._retrieve_container()
 
+        print("\n** Running mypy type checking (if no output, no errors):\n")
+
         # Run the type-checker on lmcommon
         [print(p.decode('UTF-8'), end='') for p in container.exec_run(
-            "python3 -m mypy /opt/labmanager-common --ignore-missings-imports")]
+            "python3.6 -m mypy /opt/labmanager-common --ignore-missing-imports", stream=True)]
 
         # Run all py.test unit tests
+        print("\n** Running unit tests\n")
+
         [print(p.decode('UTF-8'), end='') for p in container.exec_run("py.test /opt", stream=True,
                                                                       environment=env_var)]
 

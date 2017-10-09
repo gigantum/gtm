@@ -29,8 +29,7 @@ import docker
 from docker.errors import ImageNotFound, NotFound
 import yaml
 
-from gtmlib.common import ask_question
-from gtmlib.common import dockerize_volume_path
+from gtmlib.common import ask_question, dockerize_volume_path, get_docker_client
 
 
 class LabManagerBuilder(object):
@@ -134,7 +133,7 @@ class LabManagerBuilder(object):
         Returns:
             bool
         """
-        client = docker.from_env()
+        client = get_docker_client()
 
         # Check if image exists
         try:
@@ -152,7 +151,7 @@ class LabManagerBuilder(object):
         Returns:
             None
         """
-        client = docker.from_env()
+        client = get_docker_client()
 
         # Remove stopped container if it exists
         self.prune_container(image_name)
@@ -169,7 +168,7 @@ class LabManagerBuilder(object):
         Returns:
             None
         """
-        client = docker.from_env()
+        client = get_docker_client()
 
         # Remove stopped container if it exists
         try:
@@ -187,7 +186,7 @@ class LabManagerBuilder(object):
         Returns:
             None
         """
-        client = docker.from_env()
+        client = get_docker_client()
 
         # Check if image exists
         named_image = "{}:{}".format(self.image_name, self.get_image_tag())
@@ -308,3 +307,26 @@ class LabManagerBuilder(object):
 
         # Tag with `latest` for auto-detection of image on launch
         client.api.tag(named_image, 'gigantum/labmanager', 'latest')
+
+    def publish(self, image_tag: str = None, verbose=False) -> None:
+        """Method to push image to the logged in image repository server (e.g hub.docker.com)
+
+        Args:
+            image_tag(str): full image tag to publish
+
+        Returns:
+            None
+        """
+        client = get_docker_client()
+
+        # If no tag provided, use current repo hash
+        if not image_tag:
+            image_tag = self.get_image_tag()
+
+        if verbose:
+            [print(ln[list(ln.keys())[0]]) for ln in client.api.push('gigantum/labmanager', tag=image_tag,
+                                                                             stream=True, decode=True)]
+        else:
+            client.images.push('gigantum/labmanager', tag=image_tag)
+
+        client.images.push('gigantum/labmanager', tag='latest')
