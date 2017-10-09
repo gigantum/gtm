@@ -85,8 +85,8 @@ def labmanager_actions(args):
 
     elif args.action == "publish":
         image_tag = None
-        if "name" in args:
-            if args.name:
+        if "override_name" in args:
+            if args.override_name:
                 image_tag = args.override_name
 
         builder.publish(image_tag=image_tag, verbose=args.verbose)
