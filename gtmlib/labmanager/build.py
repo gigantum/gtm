@@ -23,6 +23,7 @@ from pkg_resources import resource_filename
 import platform
 import shutil
 import glob
+import datetime
 
 from git import Repo
 import docker
@@ -278,6 +279,11 @@ class LabManagerBuilder(object):
         for key in base_data:
             if key in overwrite_data:
                 base_data[key].update(overwrite_data[key])
+
+        # Add Build Info
+        base_data['build_info'] = {'application': "LabManager",
+                                   'built_on': str(datetime.datetime.utcnow()),
+                                   'revision': self._get_current_commit_hash()}
 
         # Write out updated config file
         with open(final_config_file, "wt") as cf:
