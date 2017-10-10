@@ -180,7 +180,7 @@ class LabManagerBuilder(object):
         except NotFound:
             pass
 
-    def build_image(self, show_output: bool=False) -> None:
+    def build_image(self, show_output: bool=False, no_cache: bool=False) -> None:
         """Method to build the LabManager Docker Image
 
         Returns:
@@ -228,10 +228,11 @@ class LabManagerBuilder(object):
                                                                                   dockerfile='Dockerfile_frontend_build',
                                                                                   tag=self._ui_build_image_name,
                                                                                   pull=True, rm=True,
-                                                                                  stream=True, decode=True)]
+                                                                                  stream=True, decode=True,
+                                                                                  nocache=no_cache)]
             else:
                 client.images.build(path=docker_build_dir, dockerfile='Dockerfile_frontend_build',
-                                    tag=self._ui_build_image_name, pull=True, rm=True)
+                                    tag=self._ui_build_image_name, pull=True, rm=True, nocache=no_cache)
 
         # Compile frontend application into gtmlib/resources/frontend_resources/build
         print("\n*** Compiling frontend application...\n\n")
@@ -297,12 +298,12 @@ class LabManagerBuilder(object):
             [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=docker_build_dir,
                                                                               dockerfile='Dockerfile_labmanager',
                                                                               tag=named_image,
-                                                                              labels=labels,
+                                                                              labels=labels, nocache=no_cache,
                                                                               pull=True, rm=True,
                                                                               stream=True, decode=True)]
         else:
             client.images.build(path=docker_build_dir, dockerfile='Dockerfile_labmanager',
-                                tag=named_image,
+                                tag=named_image, nocache=no_cache,
                                 pull=True, labels=labels)
 
         # Tag with `latest` for auto-detection of image on launch

@@ -78,7 +78,7 @@ def labmanager_actions(args):
             if args.name:
                 builder.image_name = args.override_name
 
-        builder.build_image(show_output=args.verbose)
+        builder.build_image(show_output=args.verbose, no_cache=args.no_cache)
 
         # Print Name of image
         print("\n\n*** Built LabManager Image: {}\n".format(builder.image_name))
@@ -147,7 +147,7 @@ def developer_actions(args):
             if args.name:
                 builder.image_name = args.override_name
 
-        builder.build_image(show_output=args.verbose)
+        builder.build_image(show_output=args.verbose, no_cache=args.no_cache)
 
         # Print Name of image
         print("\n\n*** Built LabManager Dev Image: {}\n".format(builder.image_name))
