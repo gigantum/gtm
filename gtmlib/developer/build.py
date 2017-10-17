@@ -160,7 +160,7 @@ class LabManagerDevBuilder(LabManagerBuilder):
             relay_container.stop(timeout=10)
             relay_container.remove()
 
-    def build_image(self, show_output: bool=False) -> None:
+    def build_image(self, show_output: bool=False, no_cache: bool=False) -> None:
         """Method to build the LabManager Dev Docker Image
 
         Returns:
@@ -211,12 +211,12 @@ class LabManagerDevBuilder(LabManagerBuilder):
                    end='') for ln in self.docker_client.api.build(path=self.docker_build_dir,
                                                                   dockerfile='Dockerfile_developer',
                                                                   tag=named_image,
-                                                                  labels=labels,
+                                                                  labels=labels, nocache=no_cache,
                                                                   pull=True, rm=True,
                                                                   stream=True, decode=True)]
         else:
             self.docker_client.images.build(path=self.docker_build_dir, dockerfile='Dockerfile_developer',
-                                            tag=named_image,
+                                            tag=named_image, nocache=no_cache,
                                             pull=True, labels=labels)
 
         # Tag with `latest` for auto-detection of image on launch
