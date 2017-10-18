@@ -206,3 +206,12 @@ workon gtm
 cd gtm
 pytest
 ```
+
+## Windows
+
+On windows, docker needs the ability to create soft links.  To enable this functionality, go to 
+```
+local security policies->local policies->user rights assignment->create symbolic link
+```
+and add `everyone` and `Authenticated Users`.
+Then you must restart your machine.  There may be a more specific way to enable soft links, i.e. restricted to a user or group.  This will require further testing.

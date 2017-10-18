@@ -114,6 +114,8 @@ class LabManagerDevBuilder(LabManagerBuilder):
         environment_vars = {"NPM_INSTALL": 1}
         if platform.system() != 'Windows':
             environment_vars['LOCAL_USER_ID'] = os.getuid()
+        else:
+            environment_vars['WINDOWS_HOST'] = 1
 
         return environment_vars
 
