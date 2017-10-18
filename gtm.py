@@ -78,10 +78,21 @@ def labmanager_actions(args):
             if args.name:
                 builder.image_name = args.override_name
 
-        builder.build_image(show_output=args.verbose)
+        builder.build_image(show_output=args.verbose, no_cache=args.no_cache)
 
         # Print Name of image
         print("\n\n*** Built LabManager Image: {}\n".format(builder.image_name))
+
+    elif args.action == "publish":
+        image_tag = None
+        if "override_name" in args:
+            if args.override_name:
+                image_tag = args.override_name
+
+        builder.publish(image_tag=image_tag, verbose=args.verbose)
+
+        # Print Name of image
+        print("\n\n*** Published LabManager Image: gigantum/labmanager:{}\n".format(image_tag))
     elif args.action == "run":
         print("Error: Unsupported action provided: `{}`. Did you mean `start`?".format(args.action), file=sys.stderr)
         sys.exit(1)
@@ -136,7 +147,7 @@ def developer_actions(args):
             if args.name:
                 builder.image_name = args.override_name
 
-        builder.build_image(show_output=args.verbose)
+        builder.build_image(show_output=args.verbose, no_cache=args.no_cache)
 
         # Print Name of image
         print("\n\n*** Built LabManager Dev Image: {}\n".format(builder.image_name))
@@ -189,7 +200,9 @@ if __name__ == '__main__':
     components['labmanager'] = [["build", "Build the LabManager Docker image"],
                                 ["start", "Start a Lab Manager Docker image"],
                                 ["stop", "Stop a LabManager Docker image"],
-                                ["test", "Run internal tests on a LabManager Docker image"]]
+                                ["test", "Run internal tests on a LabManager Docker image"],
+                                ["publish", "Publish the latest build to Docker Hub"]
+                                ]
 
     components['developer'] = [["setup", "Generate Docker configuration for development"],
                                ["build", "Build the LabManager Development Docker image based on `setup` config"],

@@ -20,7 +20,7 @@ COPY submodules/labmanager-ui /opt/labmanager-ui
 RUN cd /opt/labmanager-ui; npm install
 
 # Set the react port to match nginx
-ENV PORT 5000
+ENV PORT "10001"
 
 # Copy in build script
 COPY frontend_resources/build_script.sh /opt/labmanager-ui

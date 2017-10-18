@@ -33,15 +33,15 @@
       <option name="portBindings">
         <list>
           <DockerPortBindingImpl>
-            <option name="containerPort" value="5000" />
+            <option name="containerPort" value="10001" />
             <option name="hostIp" value="localhost" />
-            <option name="hostPort" value="5000" />
+            <option name="hostPort" value="10001" />
             <option name="protocol" value="tcp" />
           </DockerPortBindingImpl>
           <DockerPortBindingImpl>
-            <option name="containerPort" value="3000" />
+            <option name="containerPort" value="10000" />
             <option name="hostIp" value="localhost" />
-            <option name="hostPort" value="3000" />
+            <option name="hostPort" value="10000" />
             <option name="protocol" value="tcp" />
           </DockerPortBindingImpl>
         </list>
