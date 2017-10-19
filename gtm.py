@@ -93,6 +93,9 @@ def labmanager_actions(args):
 
         # Print Name of image
         print("\n\n*** Published LabManager Image: gigantum/labmanager:{}\n".format(image_tag))
+    elif args.action == "prune":
+        builder.cleanup(dev_images=False)
+
     elif args.action == "run":
         print("Error: Unsupported action provided: `{}`. Did you mean `start`?".format(args.action), file=sys.stderr)
         sys.exit(1)
@@ -152,6 +155,9 @@ def developer_actions(args):
         # Print Name of image
         print("\n\n*** Built LabManager Dev Image: {}\n".format(builder.image_name))
 
+    elif args.action == "prune":
+        lm_builder = labmanager.LabManagerBuilder()
+        lm_builder.cleanup(dev_images=True)
     elif args.action == "setup":
         dc = developer.DockerConfig()
         dc.configure()
@@ -201,14 +207,16 @@ if __name__ == '__main__':
                                 ["start", "Start a Lab Manager Docker image"],
                                 ["stop", "Stop a LabManager Docker image"],
                                 ["test", "Run internal tests on a LabManager Docker image"],
-                                ["publish", "Publish the latest build to Docker Hub"]
+                                ["publish", "Publish the latest build to Docker Hub"],
+                                ["prune", "Remove all images except the latest LabManager build"],
                                 ]
 
     components['developer'] = [["setup", "Generate Docker configuration for development"],
                                ["build", "Build the LabManager Development Docker image based on `setup` config"],
                                ["relay", "Re-compile relay queries. Runs automatically on a build command."],
                                ["run", "Start the LabManager dev container (not applicable to PyCharm configs)"],
-                               ["attach", "Attach to the running dev container"]]
+                               ["attach", "Attach to the running dev container"],
+                               ["prune", "Remove all images except the latest labmanager-dev build"]]
 
     components['base-image'] = [["build", "Build all available base images"],
                                 ["publish", "Publish all available base images to docker hub"]]
