@@ -98,13 +98,16 @@ class DockerConfig(object):
         Returns:
             None
         """
-        with open(os.path.join(self.gtm_root, 'setup.sh'), 'wt') as template:
+        # newline to output files with unix line endings on all platforms
+        with open(os.path.join(self.gtm_root, 'setup.sh'), 'wt', newline='\n') as template:
             script = """#!/bin/bash
 export HOST_WORK_DIR={}
 export PYTHONPATH=$PYTHONPATH:/opt/project/gtmlib/resources/submodules/labmanager-common
 export JUPYTER_RUNTIME_DIR=/mnt/share
 cd /opt/project/gtmlib/resources/submodules
-su giguser
+if [ -z "$WINDOWS_HOST" ]; then
+  su giguser
+fi
             """.format(working_dir)
 
             template.write(script)

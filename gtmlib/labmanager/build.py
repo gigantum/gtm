@@ -244,7 +244,7 @@ class LabManagerBuilder(object):
         dkr_vol_path = dockerize_volume_path(frontend_build_output_dir)
 
         if platform.system() == 'Windows':
-            environment_vars = {}
+            environment_vars = {'WINDOWS_HOST': 1}
         else:
             environment_vars = {'LOCAL_USER_ID': os.getuid()}
 
@@ -337,3 +337,42 @@ class LabManagerBuilder(object):
             client.images.push('gigantum/labmanager', tag=image_tag)
 
         client.images.push('gigantum/labmanager', tag='latest')
+
+    def cleanup(self, dev_images=False):
+        """Method to clean up old gigantum/labmanager images
+
+        Args:
+            dev_images(bool): If true, cleanup gigantum/labmanager-dev images instead
+
+        Returns:
+            None
+        """
+        client = get_docker_client()
+
+        if dev_images:
+            image_name = "gigantum/labmanager-dev"
+        else:
+            image_name = "gigantum/labmanager"
+
+        images = client.images.list(image_name)
+
+        cnt = 0
+        for image in images:
+            if any(['latest' in x for x in image.tags]):
+                continue
+            cnt += 1
+
+        if cnt == 0:
+            print(f" - No old {image_name} images to remove\n")
+            return None
+
+        if not ask_question(f"\nDo you want to remove {cnt} old {image_name} images?"):
+            print(" - Prune operation cancelled\n")
+            return None
+
+        print(f"\nRemoving old {image_name} images:")
+        for image in images:
+            if any(['latest' in x for x in image.tags]):
+                continue
+            print(f" - Removing {image.tags[0]}")
+            client.images.remove(image.id)
