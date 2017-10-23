@@ -24,7 +24,7 @@ import uuid
 import shutil
 import zipfile
 import subprocess
-import tarfile
+import datetime
 import time
 import typing
 
@@ -99,6 +99,11 @@ class LabManagerDevBuilder(LabManagerBuilder):
         for key in base_data:
             if key in overwrite_data:
                 base_data[key].update(overwrite_data[key])
+
+        # Add Build Info
+        base_data['build_info'] = {'application': "LabManager",
+                                   'built_on': str(datetime.datetime.utcnow()),
+                                   'revision': self._get_current_commit_hash()}
 
         # Write out updated config file
         with open(final_config_file, "wt") as cf:
