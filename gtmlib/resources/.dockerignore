@@ -1,4 +1,5 @@
 .git
 .DS_Store
 .pyc
-resources/submodules/labmanager-ui/node_modules
+.rdb
+submodules/labmanager-ui/node_modules
