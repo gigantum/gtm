@@ -198,13 +198,15 @@ class LabManagerBuilder(object):
                 raise ValueError("User aborted build due to duplicate image name.")
 
         # Rebuild front-end image to get latest sw dependencies if desired
-        build_ui_container = False
+        build_ui_container = True
         if self.image_exists(self._ui_build_image_name):
             if ask_question("\nFrontend build container already exists. Do you want to rebuild it?".format(self.image_name)):
                 print("*** Building frontend build image {}, please wait...\n".format(self._ui_build_image_name))
                 # Remove so you can rebuild
                 self.remove_image(self._ui_build_image_name)
                 build_ui_container = True
+            else:
+                build_ui_container = False
 
         # Setup docker volume that will hold the node packages
         if self.node_volume.exists():
