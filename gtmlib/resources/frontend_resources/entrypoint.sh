@@ -11,11 +11,8 @@ if [ -z "$WINDOWS_HOST" ]; then
     useradd --shell /bin/bash -u $USER_ID -o -c "" -m giguser
     export HOME=/home/giguser
 
-    # Allow user to write to the build dir with the proper permissions
-    chown giguser:root /opt/labmanager-ui
-    cd /opt/labmanager-ui/
-    chown giguser:root -R $(ls | awk '{if($1 != "node_modules"){ print $1 }}')
-
+    chown giguser:root /opt/build_dir/
+    chown giguser:root /opt/build_dir/node_modules
     exec gosu giguser "$@"
 
 else

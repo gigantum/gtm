@@ -30,7 +30,7 @@ RUN pip3.6 install -r /opt/labmanager-service-labbook/requirements.txt; pip3.6 i
 RUN mkdir -p /mnt/gigantum
 
 # Copy frontend
-COPY frontend_resources/build/ /var/www/
+COPY submodules/labmanager-ui/build/ /var/www/
 
 # Setup NGINX/uWSGI
 COPY labmanager_resources/nginx_ui.conf /etc/nginx/sites-enabled/

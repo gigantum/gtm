@@ -24,13 +24,13 @@ import platform
 import shutil
 import glob
 import datetime
+import sys
 
 from git import Repo
-import docker
 from docker.errors import ImageNotFound, NotFound
 import yaml
 
-from gtmlib.common import ask_question, dockerize_volume_path, get_docker_client
+from gtmlib.common import ask_question, dockerize_volume_path, get_docker_client, DockerVolume
 
 
 class LabManagerBuilder(object):
@@ -41,6 +41,9 @@ class LabManagerBuilder(object):
         self._image_name = None
         self._container_name = None
         self._ui_build_image_name = "gigantum/labmanager-ui-builder"
+        self.docker_client = get_docker_client()
+
+        self.node_volume = DockerVolume("labmanager_prod_node_build_vol", client=self.docker_client)
 
     def _get_current_commit_hash(self) -> str:
         """Method to get the current commit hash of the gtm repository
@@ -134,11 +137,9 @@ class LabManagerBuilder(object):
         Returns:
             bool
         """
-        client = get_docker_client()
-
         # Check if image exists
         try:
-            client.images.get(name)
+            self.docker_client.images.get(name)
             return True
         except ImageNotFound:
             return False
@@ -152,13 +153,11 @@ class LabManagerBuilder(object):
         Returns:
             None
         """
-        client = get_docker_client()
-
         # Remove stopped container if it exists
         self.prune_container(image_name)
 
         # Remove image
-        client.images.remove(image_name)
+        self.docker_client.images.remove(image_name)
 
     def prune_container(self, container_name: str) -> None:
         """Remove a docker container by name
@@ -169,14 +168,12 @@ class LabManagerBuilder(object):
         Returns:
             None
         """
-        client = get_docker_client()
-
         # Remove stopped container if it exists
         try:
             # Replace / with . if the repo is in the image name
             container_name = container_name.replace("/", ".")
 
-            build_container = client.containers.get(container_name)
+            build_container = self.docker_client.containers.get(container_name)
             build_container.remove()
         except NotFound:
             pass
@@ -187,7 +184,7 @@ class LabManagerBuilder(object):
         Returns:
             None
         """
-        client = get_docker_client()
+        self.docker_client = get_docker_client()
 
         # Check if image exists
         named_image = "{}:{}".format(self.image_name, self.get_image_tag())
@@ -200,48 +197,64 @@ class LabManagerBuilder(object):
                 # User said no
                 raise ValueError("User aborted build due to duplicate image name.")
 
-        # Rebuild front-end image to get latest sw if desired
-        build_ui_container = True
+        # Rebuild front-end image to get latest sw dependencies if desired
+        build_ui_container = False
         if self.image_exists(self._ui_build_image_name):
             if ask_question("\nFrontend build container already exists. Do you want to rebuild it?".format(self.image_name)):
                 print("*** Building frontend build image {}, please wait...\n".format(self._ui_build_image_name))
                 # Remove so you can rebuild
                 self.remove_image(self._ui_build_image_name)
-            else:
-                build_ui_container = False
+                build_ui_container = True
+
+        # Setup docker volume that will hold the node packages
+        if self.node_volume.exists():
+            if ask_question("\nNode Packages already installed. Do you want to rebuild from scratch?"):
+                print("*** Removing node package install\n")
+                self.node_volume.remove()
+                self.node_volume.create()
+        else:
+            # Create an empty volume
+            self.node_volume.create()
 
         docker_build_dir = os.path.expanduser(resource_filename("gtmlib", "resources"))
-        frontend_build_output_dir = os.path.join(docker_build_dir, 'frontend_resources', 'build')
-
-        # Delete node_modules dir if it exists locally (due to container based dev)
-        if os.path.exists(os.path.join(docker_build_dir, 'submodules', 'labmanager-ui', 'node_modules')):
-            print(" - Removing node_modules directory.")
-            shutil.rmtree(os.path.join(docker_build_dir, 'submodules', 'labmanager-ui', 'node_modules'))
+        frontend_dir = os.path.join(docker_build_dir, 'submodules', 'labmanager-ui')
 
         if build_ui_container:
-            # Make sure build dir exists
-            if not os.path.exists(frontend_build_output_dir):
-                os.makedirs(frontend_build_output_dir)
-
             # Build frontend image
             if show_output:
-                [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=docker_build_dir,
+                [print(ln[list(ln.keys())[0]], end='') for ln in self.docker_client.api.build(path=docker_build_dir,
                                                                                   dockerfile='Dockerfile_frontend_build',
                                                                                   tag=self._ui_build_image_name,
                                                                                   pull=True, rm=True,
                                                                                   stream=True, decode=True,
                                                                                   nocache=no_cache)]
             else:
-                client.images.build(path=docker_build_dir, dockerfile='Dockerfile_frontend_build',
+                self.docker_client.images.build(path=docker_build_dir, dockerfile='Dockerfile_frontend_build',
                                     tag=self._ui_build_image_name, pull=True, rm=True, nocache=no_cache)
 
         # Compile frontend application into gtmlib/resources/frontend_resources/build
-        print("\n*** Compiling frontend application...\n\n")
+        print("\n*** Updating node packages and compiling frontend application...\n\n")
         container_name = self._ui_build_image_name.replace("/", ".")
         self.prune_container(container_name)
 
+        # Copy labmanager-ui to temp dir WITHOUT node packages
+        temp_ui_dir = os.path.join(docker_build_dir, 'frontend_resources', 'build')
+        if os.path.exists(temp_ui_dir):
+            shutil.rmtree(temp_ui_dir)
+        shutil.copytree(frontend_dir, temp_ui_dir + os.path.sep, ignore=shutil.ignore_patterns("node_packages"))
+
+        if os.path.exists(os.path.join(temp_ui_dir, 'build')):
+            # Remove build dir in root of UI code
+            shutil.rmtree(os.path.join(temp_ui_dir, 'build'))
+
         # convert to docker mountable volume name (needed for non-POSIX fs)
-        dkr_vol_path = dockerize_volume_path(frontend_build_output_dir)
+        dkr_vol_path = dockerize_volume_path(temp_ui_dir)
+
+        volumes = {dkr_vol_path: {'bind': '/mnt/labmanager-ui', 'mode': 'rw'},
+                   self.node_volume.volume_name: {
+                       "bind": '/opt/build_dir/node_modules',
+                       'mode': 'rw'}
+                   }
 
         if platform.system() == 'Windows':
             environment_vars = {'WINDOWS_HOST': 1}
@@ -249,18 +262,31 @@ class LabManagerBuilder(object):
             environment_vars = {'LOCAL_USER_ID': os.getuid()}
 
         if show_output:
-            container = client.containers.run(self._ui_build_image_name,
-                                              name=container_name,
-                                              detach=True, init=True,
-                                              environment=environment_vars,
-                                              volumes={dkr_vol_path:
-                                                       {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
+            container = self.docker_client.containers.run(self._ui_build_image_name,
+                                                          name=container_name,
+                                                          detach=True, init=True,
+                                                          environment=environment_vars,
+                                                          volumes=volumes)
+
             [print(ln.decode("UTF-8")) for ln in container.attach(stream=True, logs=True)]
         else:
             # launch the ui build container
-            client.containers.run(self._ui_build_image_name,
-                                  name=container_name, detach=False, init=True, environment=environment_vars,
-                                  volumes={dkr_vol_path: {'bind': '/opt/labmanager-ui/build', 'mode': 'rw'}})
+            self.docker_client.containers.run(self._ui_build_image_name,
+                                              name=container_name, detach=False,
+                                              init=True, environment=environment_vars, volumes=volumes)
+
+        # Verify build succeeded
+        if not os.path.exists(os.path.join(temp_ui_dir, 'build', 'service-worker.js')):
+            print("** Error: Frontend build failed! ***")
+            sys.exit(1)
+
+        # Copy build dir back to submodules/labmanager-ui
+        ui_dest_dir = os.path.join(frontend_dir, 'build')
+        if os.path.exists(ui_dest_dir):
+            shutil.rmtree(ui_dest_dir)
+        shutil.copytree(os.path.join(temp_ui_dir, 'build'), ui_dest_dir)
+        # Clean up temp copy of code
+        shutil.rmtree(temp_ui_dir)
 
         # Build LabManager container
         # Write updated config file
@@ -301,19 +327,19 @@ class LabManagerBuilder(object):
         # Build image
         print("\n\n*** Building LabManager image `{}`, please wait...\n\n".format(self.image_name))
         if show_output:
-            [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=docker_build_dir,
+            [print(ln[list(ln.keys())[0]], end='') for ln in self.docker_client.api.build(path=docker_build_dir,
                                                                               dockerfile='Dockerfile_labmanager',
                                                                               tag=named_image,
                                                                               labels=labels, nocache=no_cache,
                                                                               pull=True, rm=True,
                                                                               stream=True, decode=True)]
         else:
-            client.images.build(path=docker_build_dir, dockerfile='Dockerfile_labmanager',
+            self.docker_client.images.build(path=docker_build_dir, dockerfile='Dockerfile_labmanager',
                                 tag=named_image, nocache=no_cache,
                                 pull=True, labels=labels)
 
         # Tag with `latest` for auto-detection of image on launch
-        client.api.tag(named_image, 'gigantum/labmanager', 'latest')
+        self.docker_client.api.tag(named_image, 'gigantum/labmanager', 'latest')
 
     def publish(self, image_tag: str = None, verbose=False) -> None:
         """Method to push image to the logged in image repository server (e.g hub.docker.com)
@@ -324,19 +350,17 @@ class LabManagerBuilder(object):
         Returns:
             None
         """
-        client = get_docker_client()
-
         # If no tag provided, use current repo hash
         if not image_tag:
             image_tag = self.get_image_tag()
 
         if verbose:
-            [print(ln[list(ln.keys())[0]]) for ln in client.api.push('gigantum/labmanager', tag=image_tag,
+            [print(ln[list(ln.keys())[0]]) for ln in self.docker_client.api.push('gigantum/labmanager', tag=image_tag,
                                                                              stream=True, decode=True)]
         else:
-            client.images.push('gigantum/labmanager', tag=image_tag)
+            self.docker_client.images.push('gigantum/labmanager', tag=image_tag)
 
-        client.images.push('gigantum/labmanager', tag='latest')
+        self.docker_client.images.push('gigantum/labmanager', tag='latest')
 
     def cleanup(self, dev_images=False):
         """Method to clean up old gigantum/labmanager images
@@ -347,14 +371,12 @@ class LabManagerBuilder(object):
         Returns:
             None
         """
-        client = get_docker_client()
-
         if dev_images:
             image_name = "gigantum/labmanager-dev"
         else:
             image_name = "gigantum/labmanager"
 
-        images = client.images.list(image_name)
+        images = self.docker_client.images.list(image_name)
 
         cnt = 0
         for image in images:
@@ -375,4 +397,4 @@ class LabManagerBuilder(object):
             if any(['latest' in x for x in image.tags]):
                 continue
             print(f" - Removing {image.tags[0]}")
-            client.images.remove(image.id)
+            self.docker_client.images.remove(image.id)
