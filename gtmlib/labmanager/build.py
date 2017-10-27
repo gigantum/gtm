@@ -241,7 +241,7 @@ class LabManagerBuilder(object):
         temp_ui_dir = os.path.join(docker_build_dir, 'frontend_resources', 'build')
         if os.path.exists(temp_ui_dir):
             shutil.rmtree(temp_ui_dir)
-        shutil.copytree(frontend_dir, temp_ui_dir + os.path.sep, ignore=shutil.ignore_patterns("node_packages"))
+        shutil.copytree(frontend_dir, temp_ui_dir + os.path.sep, ignore=shutil.ignore_patterns("node_modules"))
 
         if os.path.exists(os.path.join(temp_ui_dir, 'build')):
             # Remove build dir in root of UI code
