@@ -270,7 +270,7 @@ class LabManagerBuilder(object):
                                                           environment=environment_vars,
                                                           volumes=volumes)
 
-            [print(ln.decode("UTF-8")) for ln in container.attach(stream=True, logs=True)]
+            [print(ln.decode("UTF-8"), end='') for ln in container.attach(stream=True, logs=True)]
         else:
             # launch the ui build container
             self.docker_client.containers.run(self._ui_build_image_name,
