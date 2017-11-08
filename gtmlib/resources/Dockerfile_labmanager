@@ -30,7 +30,7 @@ RUN pip3.6 install -r /opt/labmanager-service-labbook/requirements.txt; pip3.6 i
 RUN mkdir -p /mnt/gigantum
 
 # Copy frontend
-COPY frontend_resources/build/ /var/www/
+COPY submodules/labmanager-ui/build/ /var/www/
 
 # Setup NGINX/uWSGI
 COPY labmanager_resources/nginx_ui.conf /etc/nginx/sites-enabled/
@@ -52,7 +52,7 @@ RUN chmod u+x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Expose Ports
-EXPOSE 5000
+EXPOSE 10000
 
 # Typically start by firing up uwsgi+nginx, but use CMD so it's easy to override
 CMD ["/usr/bin/supervisord", "--nodaemon"]

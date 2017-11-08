@@ -3,27 +3,33 @@ MAINTAINER Gigantum <hello@gigantum.io>
 
 # Install system level dependencies
 RUN apt-get -y update; apt-get -y upgrade
-RUN apt-get -y install build-essential git curl autotools-dev autoconf automake python-dev gosu
+RUN apt-get -y install build-essential git curl libtool m4 autotools-dev autoconf automake python-dev gosu
 
 # Install node
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
 RUN apt-get -y install nodejs
 
+# Install babel-node
+RUN npm install -g babel-cli@6.26.0 graphql-cli@1.0.0-beta.4 jest@21.2.1 relay-compiler@1.3.0 webpack@3.3.0 jsdom-global@3.0.2 jsdom@>=10.0.0
+
+# Install Yarn
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
+RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
+RUN apt-get update && apt-get install yarn
+
 # Build Watchman
-RUN git clone https://github.com/facebook/watchman.git; cd watchman; git checkout v4.7.0; ./autogen.sh; ./configure; make; make install
+RUN apt-get -y install gtk-doc-tools libtool m4 autotools-dev autoconf automake libssl-dev libcrypto++-dev
+RUN git clone https://github.com/facebook/watchman.git; cd watchman; git checkout v4.8.0; ./autogen.sh; ./configure; make; make install
 
-# Copy LabManager Software
-COPY submodules/labmanager-ui /opt/labmanager-ui
-
-# Build Frontend
-RUN cd /opt/labmanager-ui; npm install
+# Make build location dir
+RUN mkdir /opt/build_dir
 
 # Set the react port to match nginx
-ENV PORT 5000
+ENV PORT "10001"
 
 # Copy in build script
-COPY frontend_resources/build_script.sh /opt/labmanager-ui
-RUN chmod u+x /opt/labmanager-ui/build_script.sh
+COPY frontend_resources/build_script.sh /opt/
+RUN chmod u+x /opt/build_script.sh
 
 # Setup entrypoint to configure permissions properly
 COPY frontend_resources/entrypoint.sh /usr/local/bin/entrypoint.sh
@@ -31,4 +37,4 @@ RUN chmod u+x /usr/local/bin/entrypoint.sh
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Run build script on container start
-CMD ["/bin/bash", "/opt/labmanager-ui/build_script.sh"]
+CMD ["/bin/bash", "/opt/build_script.sh"]

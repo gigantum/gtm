@@ -3,3 +3,6 @@
 git:
   working_directory: "/mnt/gigantum"
 
+environment:
+  repo_url:
+    - https://github.com/gig-dev/demo-components.git

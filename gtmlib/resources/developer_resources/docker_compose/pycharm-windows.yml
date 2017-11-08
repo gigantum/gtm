@@ -1,4 +1,3 @@
-# PYCHARM-DEV
 version: '2'
 services:
   labmanager:
@@ -6,13 +5,17 @@ services:
     entrypoint: /usr/local/bin/entrypoint.sh
     command: /bin/bash
     ports:
-     - "5000:5000"
-     - "3000:3000"
+     - "10000:10000"
+     - "10001:10001"
     volumes:
-    - {% WORKING_DIR %}:/mnt/gigantum
-    - {% SHARE_DIR %}:/mnt/share
-    - /var/run/docker.sock:/var/run/docker.sock
+    - {% WORKING_DIR %}:/mnt/gigantum:cached
+    - //var/run/docker.sock:/var/run/docker.sock
+    - labmanager_share_vol:/mnt/share
     environment:
      - WINDOWS_HOST=1
      - HOST_WORK_DIR={% WORKING_DIR %}
     network_mode: "bridge"
+
+volumes:
+  labmanager_share_vol:
+    external: true

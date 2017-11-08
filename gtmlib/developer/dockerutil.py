@@ -23,8 +23,10 @@ import subprocess
 import shlex
 import yaml
 import sys
+import platform
 
-from gtmlib.common import get_docker_client
+from gtmlib.common import get_docker_client, DockerVolume
+
 
 class DockerUtil(object):
     """Class to manage using docker dev containers outside of PyCharm
@@ -92,11 +94,17 @@ class DockerUtil(object):
             # Make sure you are configured for "shell" debugging
             self._verify_shell_config()
 
+            # Make sure the container-container share volume exists
+            share_volume = DockerVolume("labmanager_share_vol")
+            if not share_volume.exists():
+                share_volume.create()
+
             print("Running docker up. CTRL+C to exit.")
-            cmd = 'docker-compose -f {} run --service-ports labmanager'.format(os.path.join(self._docker_compose_dir(),
+            cmd = 'docker-compose -f {} run --service-ports labmanager'.format(
+                                                                               os.path.join(self._docker_compose_dir(),
                                                                                'docker-compose.yml'))
             try:
-                process = subprocess.run(shlex.split(cmd),
+                process = subprocess.run(shlex.split(cmd, posix = not platform.system() == 'Windows'),
                                          stdout=subprocess.PIPE,
                                          stderr=subprocess.PIPE)
                 print(process)

@@ -78,10 +78,27 @@ def labmanager_actions(args):
             if args.name:
                 builder.image_name = args.override_name
 
-        builder.build_image(show_output=args.verbose)
+        builder.build_image(show_output=args.verbose, no_cache=args.no_cache)
 
         # Print Name of image
         print("\n\n*** Built LabManager Image: {}\n".format(builder.image_name))
+
+    elif args.action == "publish":
+        image_tag = None
+        if "override_name" in args:
+            if args.override_name:
+                image_tag = args.override_name
+
+        builder.publish(image_tag=image_tag, verbose=args.verbose)
+
+        # Print Name of image
+        print("\n\n*** Published LabManager Image: gigantum/labmanager:{}\n".format(image_tag))
+    elif args.action == "prune":
+        builder.cleanup(dev_images=False)
+
+    elif args.action == "run":
+        print("Error: Unsupported action provided: `{}`. Did you mean `start`?".format(args.action), file=sys.stderr)
+        sys.exit(1)
     elif args.action == "start" or args.action == "stop":
         # If not a tagged version, force to latest
         if ":" not in builder.image_name:
@@ -110,7 +127,7 @@ def labmanager_actions(args):
         tester = labmanager.LabManagerTester(builder.container_name)
         tester.test()
     else:
-        print("Error: Unsupported action provided: {}".format(args.action), file=sys.stderr)
+        print("Error: Unsupported action provided: `{}`".format(args.action), file=sys.stderr)
         sys.exit(1)
 
 
@@ -133,17 +150,23 @@ def developer_actions(args):
             if args.name:
                 builder.image_name = args.override_name
 
-        builder.build_image(show_output=args.verbose)
+        builder.build_image(show_output=args.verbose, no_cache=args.no_cache)
 
         # Print Name of image
         print("\n\n*** Built LabManager Dev Image: {}\n".format(builder.image_name))
 
+    elif args.action == "prune":
+        lm_builder = labmanager.LabManagerBuilder()
+        lm_builder.cleanup(dev_images=True)
     elif args.action == "setup":
         dc = developer.DockerConfig()
         dc.configure()
     elif args.action == "run":
         du = developer.DockerUtil()
         du.run()
+    elif args.action == "relay":
+        builder = developer.LabManagerDevBuilder()
+        builder.run_relay()
     elif args.action == "attach":
         du = developer.DockerUtil()
         du.attach()
@@ -183,12 +206,17 @@ if __name__ == '__main__':
     components['labmanager'] = [["build", "Build the LabManager Docker image"],
                                 ["start", "Start a Lab Manager Docker image"],
                                 ["stop", "Stop a LabManager Docker image"],
-                                ["test", "Run internal tests on a LabManager Docker image"]]
+                                ["test", "Run internal tests on a LabManager Docker image"],
+                                ["publish", "Publish the latest build to Docker Hub"],
+                                ["prune", "Remove all images except the latest LabManager build"],
+                                ]
 
     components['developer'] = [["setup", "Generate Docker configuration for development"],
                                ["build", "Build the LabManager Development Docker image based on `setup` config"],
+                               ["relay", "Re-compile relay queries. Runs automatically on a build command."],
                                ["run", "Start the LabManager dev container (not applicable to PyCharm configs)"],
-                               ["attach", "Attach to the running dev container"]]
+                               ["attach", "Attach to the running dev container"],
+                               ["prune", "Remove all images except the latest labmanager-dev build"]]
 
     components['base-image'] = [["build", "Build all available base images"],
                                 ["publish", "Publish all available base images to docker hub"]]
