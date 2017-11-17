@@ -22,7 +22,7 @@ import platform
 
 import docker
 
-from gtmlib.common import dockerize_volume_path, DockerVolume
+from gtmlib.common import dockerize_path, DockerVolume
 
 
 class LabManagerRunner(object):
@@ -76,7 +76,7 @@ class LabManagerRunner(object):
         #    //C/a/b/ format for volume C:\\a\\b
         if platform.system() == 'Windows':
             environment_mapping['WINDOWS_HOST'] = 1
-            volume_mapping[dockerize_volume_path(working_dir)] = {'bind': '/mnt/gigantum', 'mode': 'cached'}
+            volume_mapping[dockerize_path(working_dir)] = {'bind': '/mnt/gigantum', 'mode': 'cached'}
             volume_mapping['//var/run/docker.sock'] = {'bind': '/var/run/docker.sock', 'mode': 'rw'}
 
         else:

@@ -30,7 +30,7 @@ from git import Repo
 from docker.errors import ImageNotFound, NotFound
 import yaml
 
-from gtmlib.common import ask_question, dockerize_volume_path, get_docker_client, DockerVolume
+from gtmlib.common import ask_question, dockerize_path, get_docker_client, DockerVolume
 
 
 class LabManagerBuilder(object):
@@ -250,7 +250,7 @@ class LabManagerBuilder(object):
             shutil.rmtree(os.path.join(temp_ui_dir, 'build'))
 
         # convert to docker mountable volume name (needed for non-POSIX fs)
-        dkr_vol_path = dockerize_volume_path(temp_ui_dir)
+        dkr_vol_path = dockerize_path(temp_ui_dir)
 
         volumes = {dkr_vol_path: {'bind': '/mnt/labmanager-ui', 'mode': 'rw'},
                    self.node_volume.volume_name: {
