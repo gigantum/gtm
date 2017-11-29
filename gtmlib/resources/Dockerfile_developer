@@ -25,6 +25,14 @@ RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
 # Setup Global git config
 RUN git config --global user.email "noreply@gigantum.io"; git config --global user.name "Gigantum AutoCommit"
 
+# Copy SSH keys (for integration into GitLab remote)
+RUN mkdir /home/giguser/.ssh
+COPY developer_resources/id_rsa /home/giguser/.ssh
+COPY developer_resources/id_rsa.pub /home/giguser/.ssh
+RUN echo "StrictHostKeyCheckingr no" > /home/giguser/.ssh/config
+RUN echo "UserKnownHostsFile /dev/null" >> /home/giguser/.ssh/config
+RUN ssh -T git@ec2-107-22-88-175.compute-1.amazonaws.com
+
 # Copy requirements.txt files
 COPY submodules/labmanager-common/requirements.txt /opt/labmanager-common_requirements.txt
 COPY submodules/labmanager-service-labbook/requirements.txt /opt/labmanager-service-labbook_requirements.txt
