@@ -25,13 +25,6 @@ RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
 # Setup Global git config
 RUN git config --global user.email "noreply@gigantum.io"; git config --global user.name "Gigantum AutoCommit"
 
-# Copy SSH keys (for integration into GitLab remote)
-RUN mkdir /home/giguser/.ssh
-COPY developer_resources/id_rsa /home/giguser/.ssh
-COPY developer_resources/id_rsa.pub /home/giguser/.ssh
-RUN echo "StrictHostKeyCheckingr no" > /home/giguser/.ssh/config
-RUN echo "UserKnownHostsFile /dev/null" >> /home/giguser/.ssh/config
-RUN ssh -T git@ec2-107-22-88-175.compute-1.amazonaws.com
 
 # Copy requirements.txt files
 COPY submodules/labmanager-common/requirements.txt /opt/labmanager-common_requirements.txt
@@ -67,5 +60,17 @@ EXPOSE 10000
 EXPOSE 10001
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+
+# Copy SSH keys (for integration into GitLab remote)
+RUN mkdir -p /home/giguser/.ssh
+COPY developer_resources/id_rsa /home/giguser/.ssh
+COPY developer_resources/id_rsa.pub /home/giguser/.ssh
+RUN echo "StrictHostKeyChecking no" > /home/giguser/.ssh/config
+RUN echo "UserKnownHostsFile /dev/null" >> /home/giguser/.ssh/config
+RUN chown -R giguser:giguser /home/giguser/.ssh
+RUN chmod 400 /home/giguser/.ssh/config
+RUN chmod 400 /home/giguser/.ssh/id_rsa
+RUN chmod 0644 /home/giguser/ssh/is_rsa.pub
+RUN ssh -T git@ec2-107-22-88-175.compute-1.amazonaws.com -p 9922
 
 CMD ["/bin/bash"]
