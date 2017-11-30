@@ -25,6 +25,12 @@ if [ -z "$WINDOWS_HOST" ]; then
     chown -R giguser:root /opt/redis
     cp /root/.gitconfig /home/giguser/
 
+    # SSH config
+    mkdir -p /home/giguser/.ssh
+    cp -a /root/.ssh/* /home/giguser/.ssh/
+    chown -R giguser:giguser /home/giguser/.ssh
+    ssh -T git@ec2-107-22-88-175.compute-1.amazonaws.com -p 9922
+
     if [ -n "$SET_PERMISSIONS" ]; then
         # This is a *nix config running shell dev so you need to setup perms on the mounted code (skipping node packages)
        cd $SET_PERMISSIONS

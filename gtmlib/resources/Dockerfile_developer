@@ -59,18 +59,17 @@ RUN chmod u+x /usr/local/bin/entrypoint.sh
 EXPOSE 10000
 EXPOSE 10001
 
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Copy SSH keys (for integration into GitLab remote)
-RUN mkdir -p /home/giguser/.ssh
-COPY developer_resources/id_rsa /home/giguser/.ssh
-COPY developer_resources/id_rsa.pub /home/giguser/.ssh
-RUN echo "StrictHostKeyChecking no" > /home/giguser/.ssh/config
-RUN echo "UserKnownHostsFile /dev/null" >> /home/giguser/.ssh/config
-RUN chown -R giguser:giguser /home/giguser/.ssh
-RUN chmod 400 /home/giguser/.ssh/config
-RUN chmod 400 /home/giguser/.ssh/id_rsa
-RUN chmod 0644 /home/giguser/ssh/is_rsa.pub
+RUN mkdir -p /root/.ssh
+COPY developer_resources/id_rsa /root/.ssh
+COPY developer_resources/id_rsa.pub /root/.ssh
+RUN echo "StrictHostKeyChecking no" > /root/.ssh/config
+RUN echo "UserKnownHostsFile /dev/null" >> /root/.ssh/config
+RUN chmod 400 /root/.ssh/config
+RUN chmod 400 /root/.ssh/id_rsa
+RUN chmod 0644 /root/.ssh/id_rsa.pub
 RUN ssh -T git@ec2-107-22-88-175.compute-1.amazonaws.com -p 9922
 
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD ["/bin/bash"]
