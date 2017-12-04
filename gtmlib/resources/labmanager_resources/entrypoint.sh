@@ -34,6 +34,12 @@ if [ -z "$WINDOWS_HOST" ]; then
     chown giguser:root /run/nginx.pid
     chown giguser:root /var/run/docker.sock
     cp /root/.gitconfig /home/giguser/
+    
+    # Copy ssh keys to giguser for remote GitLab repository.
+    mkdir -p /home/giguser/.ssh
+    cp -a /root/.ssh/* /home/giguser/.ssh/
+    chown -R giguser:giguser /home/giguser/.ssh
+    ssh -T git@ec2-107-22-88-175.compute-1.amazonaws.com -p 9922
 
     # Not a windows host
     exec gosu giguser "$@"
