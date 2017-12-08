@@ -29,7 +29,7 @@ if [ -z "$WINDOWS_HOST" ]; then
     mkdir -p /home/giguser/.ssh
     cp -a /root/.ssh/* /home/giguser/.ssh/
     chown -R giguser:giguser /home/giguser/.ssh
-    ssh -T git@repo.github.io -p 9922
+    ssh -T git@repo.gigantum.io -p 9922
 
     if [ -n "$SET_PERMISSIONS" ]; then
         # This is a *nix config running shell dev so you need to setup perms on the mounted code (skipping node packages)
