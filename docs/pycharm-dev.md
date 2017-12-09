@@ -41,7 +41,7 @@ To use the dev container in PyCharm, you need to setup the remote interpreter.
     
 4. Select Docker Compose and a docker server. If you don't have a server available, click new and configure per PyCharm
 instructions [here](https://www.jetbrains.com/help/pycharm/configuring-remote-interpreters-via-docker-compose.html).
-In general, mac users should use "Docker for Mac" and Windows users should user "docker engine".
+In general, mac users should use "Docker for Mac" and Windows users should user "TCP socket" with the default port (2375).
     
     ![pycharm menu](img/remote_intepreter2a.png)
 
