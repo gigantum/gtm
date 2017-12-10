@@ -20,6 +20,7 @@
 import os
 from pkg_resources import resource_filename
 import platform
+from gtmlib.common import dockerize_path
 from gtmlib.common.console import ask_question
 import shutil
 
@@ -78,11 +79,13 @@ class DockerConfig(object):
         with open(template_file, 'rt') as template:
             data = template.read()
 
-        # Replace values
-        data = data.replace('{% WORKING_DIR %}', working_dir)
 
+        # Replace values
         if not is_windows:
+            data = data.replace('{% WORKING_DIR %}', working_dir)
             data = data.replace('{% USER_ID %}', str(uid))
+        else:
+            data = data.replace('{% WORKING_DIR %}', dockerize_path(working_dir))
 
         if not use_pycharm:
             data = data.replace('{% GTM_DIR %}', self.gtm_root)
@@ -98,6 +101,7 @@ class DockerConfig(object):
         Returns:
             None
         """
+
         # newline to output files with unix line endings on all platforms
         with open(os.path.join(self.gtm_root, 'setup.sh'), 'wt', newline='\n') as template:
             script = """#!/bin/bash
