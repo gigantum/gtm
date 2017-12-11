@@ -57,9 +57,9 @@ RUN chmod 400 /root/.ssh/id_rsa
 RUN chmod 0644 /root/.ssh/id_rsa.pub
 RUN ssh -T git@repo.gigantum.io -p 9922
 
-
 COPY labmanager_resources/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod u+x /usr/local/bin/entrypoint.sh
+
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Expose Ports
