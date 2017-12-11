@@ -260,6 +260,7 @@ class LabManagerBuilder(object):
 
         if platform.system() == 'Windows':
             environment_vars = {'WINDOWS_HOST': 1}
+            environment_vars = {'LOCAL_USER_ID': 9001}
         else:
             environment_vars = {'LOCAL_USER_ID': os.getuid()}
 
