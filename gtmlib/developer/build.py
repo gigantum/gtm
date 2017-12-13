@@ -32,7 +32,7 @@ import docker
 from docker.errors import NotFound
 import yaml
 
-from gtmlib.common import ask_question, dockerize_volume_path, get_docker_client, DockerVolume
+from gtmlib.common import ask_question, dockerize_path, get_docker_client, DockerVolume
 from gtmlib.labmanager.build import LabManagerBuilder
 
 
@@ -132,7 +132,7 @@ class LabManagerDevBuilder(LabManagerBuilder):
         """
         print(" - running `yarn relay`...")
         # convert to docker mountable volume name (needed for non-POSIX fs)
-        dkr_vol_path = dockerize_volume_path(self.ui_app_dir)
+        dkr_vol_path = dockerize_path(self.ui_app_dir)
 
         relay_container = None
         try:
@@ -233,7 +233,7 @@ class LabManagerDevBuilder(LabManagerBuilder):
         print(" - Installing node packages to run UI in debug mode...this may take awhile...")
 
         # convert to docker mountable volume name (needed for non-POSIX fs)
-        dkr_vol_path = dockerize_volume_path(self.ui_app_dir)
+        dkr_vol_path = dockerize_path(self.ui_app_dir)
 
         command = 'sh -c "cp -a /mnt/src/* /mnt/node_build && cd /mnt/node_build && yarn install"'
 

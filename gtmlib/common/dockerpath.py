@@ -22,14 +22,14 @@ import os
 import re
 
 
-def dockerize_volume_path(volpath: str) -> str:
+def dockerize_path(dkrpath: str) -> str:
     """Returns a path that can be mounted as a docker volume on windows
         Docker uses non-standard formats for windows mounts.
         This routine converts C:\\a\\b -> //C/a/b on windows and does
         nothing on posix systems.
 
     Args:
-        volpath(str): a python path
+        dkrpath(str): a python path
 
     Returns:
         str: path that can be handed to Docker for a volume mount
@@ -38,8 +38,8 @@ def dockerize_volume_path(volpath: str) -> str:
     # detect if it's a volume path and rewrite the string.
     if os.path.__name__ == 'ntpath':
         # for windows switch the slashes and then sub the drive letter
-        return re.sub('(^[A-Z]):(.*$)', '//\g<1>\g<2>', volpath.replace('\\', '/'))
+        return re.sub('(^[A-Z]):(.*$)', '//\g<1>\g<2>', dkrpath.replace('\\', '/'))
     else:
-        return volpath 
+        return dkrpath 
 
 
