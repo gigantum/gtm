@@ -209,9 +209,19 @@ pytest
 
 ## Windows
 
-On windows, docker needs the ability to create soft links.  To enable this functionality, go to 
+Developing on windows has two additional depencies.  First, Windows requires python extensions for windows.  One must install an additional package.
 ```
-local security policies->local policies->user rights assignment->create symbolic link
+pip install pypiwin32
 ```
-and add `everyone` and `Authenticated Users`.
-Then you must restart your machine.  There may be a more specific way to enable soft links, i.e. restricted to a user or group.  This will require further testing.
+The second requirement applies only to **devloper** mode in which the code from the host machine is linked into the labmanager docker container.  Windows does not allow links by non-administrative users by default.  On windows, navigate the following path from the launcher:
+```
+Local Scurity Policy ->
+	Local Policies->
+		User Rights Assignment->
+			Create symbolic links
+```
+Double click on this and then select ```Add user or Group```.  In the box that says "Enter the object names to select...." put 
+```
+Everyone
+```
+Then you must restart your machine.  This policy is overly broad.  It is really only the Docker user that needs to make links, but this is a reasonable solution to allow Docker this abiliy.  It is hard to identify the Docker user.
