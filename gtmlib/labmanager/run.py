@@ -71,8 +71,7 @@ class LabManagerRunner(object):
         volume_mapping = {'labmanager_share_vol': {'bind': '/mnt/share', 'mode': 'rw'}}
 
         # windows docker has several eccentricities
-        #    no user ids
-        #    //var for the socker mapping
+        #    // for / in /var/run/docker.sock
         #    //C/a/b/ format for volume C:\\a\\b
         if platform.system() == 'Windows':
             environment_mapping['WINDOWS_HOST'] = 1
