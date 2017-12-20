@@ -22,6 +22,11 @@ export HOME=/home/giguser
 # Set permissions for container-container share
 chown -R giguser:root /mnt/share/
 
+# Setup git config for giguser
+gosu giguser bash -c "git config --global user.email 'noreply@gigantum.io'"
+gosu giguser bash -c "git config --global user.name 'Gigantum AutoCommit'"
+gosu giguser bash -c "git config --global credential.helper store"
+
 # Setup everything to allow giguser to run nginx and git
 chown -R giguser:root /opt/log
 chown -R giguser:root /opt/nginx
@@ -32,7 +37,6 @@ chown -R giguser:root /var/log/nginx/
 chown giguser:root /var/lock/nginx.lock
 chown giguser:root /run/nginx.pid
 chown giguser:root /var/run/docker.sock
-cp /root/.gitconfig /home/giguser/
 
 # Not a windows host
 exec gosu giguser "$@"

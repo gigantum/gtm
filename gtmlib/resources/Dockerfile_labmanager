@@ -9,9 +9,6 @@ RUN apt-get -y update; apt-get -y install build-essential python3.6-dev git ngin
 # Install pip with PPA 3.6 installation
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
 
-# Setup Global git config
-RUN git config --global user.email "noreply@gigantum.io"; git config --global user.name "Gigantum AutoCommit"
-
 # Copy LabManager Package
 COPY submodules/labmanager-common /opt/labmanager-common
 COPY submodules/labmanager-service-labbook /opt/labmanager-service-labbook
