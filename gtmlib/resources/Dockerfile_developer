@@ -22,9 +22,6 @@ RUN git clone https://github.com/facebook/watchman.git; cd watchman; git checkou
 # Install pip with PPA 3.6 installation
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
 
-# Setup Global git config
-RUN git config --global user.email "noreply@gigantum.io"; git config --global user.name "Gigantum AutoCommit"
-
 # Copy requirements.txt files
 COPY submodules/labmanager-common/requirements.txt /opt/labmanager-common_requirements.txt
 COPY submodules/labmanager-service-labbook/requirements.txt /opt/labmanager-service-labbook_requirements.txt
