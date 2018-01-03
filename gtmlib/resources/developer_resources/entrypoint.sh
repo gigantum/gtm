@@ -21,7 +21,12 @@ export HOME=/home/giguser
 chown -R giguser:root /opt/run
 chown -R giguser:root /opt/log
 chown -R giguser:root /opt/redis
-cp /root/.gitconfig /home/giguser/
+
+# Setup git config for giguser
+gosu giguser bash -c "git config --global user.email 'noreply@gigantum.io'"
+gosu giguser bash -c "git config --global user.name 'Gigantum AutoCommit'"
+gosu giguser bash -c "git config --global credential.helper store"
+
 
 if [ -n "$SET_PERMISSIONS" ]; then
     # This is a *nix config running shell dev so you need to setup perms on the mounted code (skipping node packages)
