@@ -4,17 +4,13 @@
 # Either use the LOCAL_USER_ID if passed in at runtime or
 # fallback
 
-if [ -z "$WINDOWS_HOST" ]; then
-    USER_ID=${LOCAL_USER_ID:-9001}
 
-    echo "Starting with UID : $USER_ID"
-    useradd --shell /bin/bash -u $USER_ID -o -c "" -m giguser
-    export HOME=/home/giguser
+USER_ID=${LOCAL_USER_ID:-9001}
 
-    chown giguser:root /opt/build_dir/
-    chown giguser:root /opt/build_dir/node_modules
-    exec gosu giguser "$@"
+echo "Starting with UID : $USER_ID"
+useradd --shell /bin/bash -u $USER_ID -o -c "" -m giguser
+export HOME=/home/giguser
 
-else
-    exec "$@"
-fi
+chown giguser:root /opt/build_dir/
+chown giguser:root /opt/build_dir/node_modules
+exec gosu giguser "$@"

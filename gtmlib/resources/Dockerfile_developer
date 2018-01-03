@@ -4,7 +4,7 @@ MAINTAINER Gigantum <hello@gigantum.io>
 # Install system level dependencies
 RUN apt-get -y update; apt-get install -y software-properties-common; add-apt-repository ppa:jonathonf/python-3.6
 RUN apt-get -y upgrade;
-RUN apt-get -y update; apt-get -y install build-essential python3.6-dev libleveldb-dev libleveldb1v5 git supervisor curl gosu redis-server python-dev vim emacs zip
+RUN apt-get -y update; apt-get -y install build-essential python3.6-dev git supervisor curl gosu redis-server python-dev vim emacs zip
 
 # Install node
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
@@ -21,9 +21,6 @@ RUN git clone https://github.com/facebook/watchman.git; cd watchman; git checkou
 
 # Install pip with PPA 3.6 installation
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
-
-# Setup Global git config
-RUN git config --global user.email "noreply@gigantum.io"; git config --global user.name "Gigantum AutoCommit"
 
 # Copy requirements.txt files
 COPY submodules/labmanager-common/requirements.txt /opt/labmanager-common_requirements.txt
