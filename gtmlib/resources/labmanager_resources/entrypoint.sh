@@ -32,9 +32,11 @@ chown -R giguser:root /opt/log
 chown -R giguser:root /opt/nginx
 chown -R giguser:root /opt/redis
 chown -R giguser:root /opt/run
+chown -R giguser:root /opt/labmanager-common
+chown -R giguser:root /opt/labmanager-service-labbook
 chown -R giguser:root /var/lib/nginx/
 chown -R giguser:root /var/log/nginx/
-chown giguser:root /var/lock/nginx.lock
+chown --silent giguser:root /var/lock/nginx.lock
 chown giguser:root /run/nginx.pid
 chown giguser:root /var/run/docker.sock
 
