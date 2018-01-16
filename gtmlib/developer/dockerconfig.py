@@ -174,6 +174,9 @@ fi
         if import_run_configs:
             src_run_config_dir = os.path.join(self.resources_root, 'pycharm_run_configurations')
             run_config_dir = os.path.join(self.gtm_root, '.idea', 'runConfigurations')
+            # This directory does not exist by default if no configurations have been defined yet
+            # (at least on Windows 10 / PyCharm 2017.3.2)
+            os.makedirs(run_config_dir, exists_ok=True)
 
             files = os.listdir(src_run_config_dir)
             for file in files:
