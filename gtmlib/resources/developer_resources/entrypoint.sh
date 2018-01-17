@@ -1,12 +1,5 @@
 #!/bin/bash
 
-# BVB - Required to get rq to run.
-export LC_ALL=C.UTF-8
-export LANG=C.UTF-8
-
-# Setup python path
-export PYTHONPATH=$PYTHONPATH:/opt/project/gtmlib/resources/submodules/labmanager-common
-
 # TODO: Generalize Dev Env Vars
 export JUPYTER_RUNTIME_DIR=/mnt/share/jupyter/runtime
 
