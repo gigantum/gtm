@@ -1,34 +1,57 @@
 FROM ubuntu:16.04
-MAINTAINER Gigantum <hello@gigantum.io>
+LABEL maintainer="Gigantum <hello@gigantum.io>"
 
 # Install system level dependencies
-RUN apt-get -y update; apt-get install -y software-properties-common; add-apt-repository ppa:jonathonf/python-3.6
-RUN apt-get -y upgrade;
-RUN apt-get -y update; apt-get -y install build-essential python3.6-dev git supervisor curl gosu redis-server python-dev vim emacs zip
+RUN apt-get -y update && apt-get -y upgrade && apt-get -y install build-essential python-dev git supervisor curl gosu \
+    redis-server vim emacs zip locales wget
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
+    locale-gen
+
+# Install conda
+ENV CONDA_DIR=/opt/conda \
+    SHELL=/bin/bash \
+    MINICONDA_VERSION=4.3.31 \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
+    LANGUAGE=en_US.UTF-8 \
+    GTM_DEVELOPER=1
+
+RUN cd /tmp && \
+    wget --quiet https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
+    echo "7fe70b214bee1143e3e3f0467b71453c *Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh" | md5sum -c - && \
+    /bin/bash Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -f -b -p $CONDA_DIR && \
+    rm Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
+    $CONDA_DIR/bin/conda config --system --prepend channels conda-forge && \
+    $CONDA_DIR/bin/conda config --system --set auto_update_conda false && \
+    $CONDA_DIR/bin/conda config --system --set show_channel_urls true && \
+    $CONDA_DIR/bin/conda update --all --quiet --yes && \
+    $CONDA_DIR/bin/conda clean -tpsy
 
 # Install node
-RUN curl -sL https://deb.nodesource.com/setup_6.x | bash -
-RUN apt-get -y install nodejs
+RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
+    apt-get -y install nodejs
 
 # Install Yarn
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add -
-RUN echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list
-RUN apt-get update && apt-get install yarn
+RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
+    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
+    apt-get update && apt-get install yarn
 
 # Build Watchman
-RUN apt-get -y install gtk-doc-tools libtool m4 autotools-dev autoconf automake libssl-dev libcrypto++-dev
-RUN git clone https://github.com/facebook/watchman.git; cd watchman; git checkout v4.8.0; ./autogen.sh; ./configure; make; make install
-
-# Install pip with PPA 3.6 installation
-RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
+RUN apt-get -y install gtk-doc-tools libtool m4 autotools-dev autoconf automake libssl-dev libcrypto++-dev && \
+    git clone https://github.com/facebook/watchman.git; cd watchman; git checkout v4.8.0; ./autogen.sh; ./configure; make; make install
 
 # Copy requirements.txt files
 COPY submodules/labmanager-common/requirements.txt /opt/labmanager-common_requirements.txt
 COPY submodules/labmanager-service-labbook/requirements.txt /opt/labmanager-service-labbook_requirements.txt
 
+# Setup path and python path
+ENV PATH=$CONDA_DIR/bin:$PATH \
+    PYTHONPATH=$PYTHONPATH:/opt/project/gtmlib/resources/submodules/labmanager-common
+
 # Install dependencies
-RUN pip3.6 install -r /opt/labmanager-common_requirements.txt
-RUN pip3.6 install -r /opt/labmanager-service-labbook_requirements.txt
+RUN pip install -r /opt/labmanager-common_requirements.txt && \
+    pip install -r /opt/labmanager-service-labbook_requirements.txt
 
 # Setup lmcommon config file - should be written by automation before copy
 COPY developer_resources/labmanager-config.yaml /etc/gigantum/labmanager.yaml
@@ -37,7 +60,7 @@ COPY developer_resources/labmanager-config.yaml /etc/gigantum/labmanager.yaml
 COPY submodules/labmanager-common/lmcommon/logging/logging.json.default /etc/gigantum/logging.json
 
 # Make working dir and code mount points
-RUN mkdir -p /mnt/gigantum; mkdir /opt/node_build
+RUN mkdir -p /mnt/gigantum && mkdir /opt/node_build
 
 # Setup Redis
 RUN mkdir /opt/redis
