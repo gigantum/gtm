@@ -5,4 +5,4 @@ git:
 
 environment:
   repo_url:
-    - https://github.com/gig-dev/demo-components.git
+    - https://github.com/gig-dev/components2.git
