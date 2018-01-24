@@ -298,8 +298,7 @@ class LabManagerDevBuilder(LabManagerBuilder):
 
             # Make node module dir if it doesn't exist
             node_dir = os.path.join(self.ui_app_dir, 'node_modules')
-            if not node_dir:
-                os.makedirs(node_dir)
+            os.makedirs(node_dir, exist_ok=True)
 
             # docker cp the files out
             src_str = "{}:/mnt/node_build/node_modules".format(node_container.name)

@@ -54,6 +54,12 @@ yet, go do it). It is located in `gtm/gtmlib/resource/developer_resource/docker-
     
     ![pycharm menu](img/remote_intepreter2c.png)
     
+7. In the Project file viewer, several directories need to be marked as a "Sources Root", by right-clicking, then 
+   selecting *Mark Directory as > Sources Root*. These directories are both found under
+   `gtm/gtmlib/resources/submodules`:
+  - `labmanager-common`
+  - `labmanager-service-labbook`
+
 ### Using Run Configurations
 
 Baseline run configurations come bundled with gtm. If you've set your project up like above, you can re-run `gtm developer setup`
