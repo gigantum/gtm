@@ -2,11 +2,8 @@ FROM ubuntu:16.04
 LABEL maintainer="Gigantum <hello@gigantum.io>"
 
 # Install system level dependencies
-RUN apt-get -y update && apt-get -y upgrade && apt-get -y install build-essential python-dev git supervisor curl gosu \
-    redis-server vim emacs zip locales wget
-
-RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && \
-    locale-gen
+RUN apt-get -y update && apt-get -y install build-essential python-dev git supervisor curl gosu \
+ redis-server vim emacs zip wget
 
 # Install conda
 ENV CONDA_DIR=/opt/conda \
@@ -14,19 +11,19 @@ ENV CONDA_DIR=/opt/conda \
     MINICONDA_VERSION=4.3.31 \
     LC_ALL=C.UTF-8 \
     LANG=C.UTF-8 \
-    LANGUAGE=en_US.UTF-8 \
     GTM_DEVELOPER=1
 
-RUN cd /tmp && \
-    wget --quiet https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
-    echo "7fe70b214bee1143e3e3f0467b71453c *Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh" | md5sum -c - && \
-    /bin/bash Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -f -b -p $CONDA_DIR && \
-    rm Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
-    $CONDA_DIR/bin/conda config --system --prepend channels conda-forge && \
-    $CONDA_DIR/bin/conda config --system --set auto_update_conda false && \
-    $CONDA_DIR/bin/conda config --system --set show_channel_urls true && \
-    $CONDA_DIR/bin/conda update --all --quiet --yes && \
-    $CONDA_DIR/bin/conda clean -tpsy
+RUN cd /tmp && wget --quiet https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
+echo "7fe70b214bee1143e3e3f0467b71453c *Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh" | md5sum -c - && \
+/bin/bash Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -f -b -p $CONDA_DIR && \
+rm Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
+$CONDA_DIR/bin/conda config --system --prepend channels conda-forge && \
+$CONDA_DIR/bin/conda config --system --set auto_update_conda false && \
+$CONDA_DIR/bin/conda config --system --set show_channel_urls true && \
+$CONDA_DIR/bin/conda update --all --quiet --yes && \
+$CONDA_DIR/bin/conda create --quiet --yes -n py27 python=2.7 anaconda && \
+$CONDA_DIR/bin/conda create --quiet --yes -n py36 python=3.6 anaconda && \
+$CONDA_DIR/bin/conda clean -tpsy
 
 # Install node
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
@@ -37,10 +34,6 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
     echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
     apt-get update && apt-get install yarn
 
-# Build Watchman
-RUN apt-get -y install gtk-doc-tools libtool m4 autotools-dev autoconf automake libssl-dev libcrypto++-dev && \
-    git clone https://github.com/facebook/watchman.git; cd watchman; git checkout v4.8.0; ./autogen.sh; ./configure; make; make install
-
 # Copy requirements.txt files
 COPY submodules/labmanager-common/requirements.txt /opt/labmanager-common_requirements.txt
 COPY submodules/labmanager-service-labbook/requirements.txt /opt/labmanager-service-labbook_requirements.txt
@@ -50,8 +43,8 @@ ENV PATH=$CONDA_DIR/bin:$PATH \
     PYTHONPATH=$PYTHONPATH:/opt/project/gtmlib/resources/submodules/labmanager-common
 
 # Install dependencies
-RUN pip install -r /opt/labmanager-common_requirements.txt && \
-    pip install -r /opt/labmanager-service-labbook_requirements.txt
+RUN $CONDA_DIR/bin/pip install -r /opt/labmanager-common_requirements.txt && \
+$CONDA_DIR/bin/pip install -r /opt/labmanager-service-labbook_requirements.txt
 
 # Setup lmcommon config file - should be written by automation before copy
 COPY developer_resources/labmanager-config.yaml /etc/gigantum/labmanager.yaml
