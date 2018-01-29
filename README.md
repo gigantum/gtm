@@ -209,6 +209,11 @@ pytest
 
 ## Windows
 
+We have tested and support using conda as the package manager on Windows.  Please install conda _For local user only (recommended)_.  This allows the local user to manipulate the conda environment.  Then you can run conda out of the anaconda shell.  It is recommended to add conda to your path.  In `Edit the System Environmental Variables -> Environment Variables` edit the `PATH` variable and add
+```
+%USERPROFILE%\Anaconda3
+%USERPROFILE%\Anaconda3\Scripts
+```
 Developing on windows has two additional depencies.  First, Windows requires python extensions for windows.  One must install an additional package.
 ```
 pip install pypiwin32
