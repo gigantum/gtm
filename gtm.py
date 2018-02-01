@@ -191,7 +191,7 @@ def baseimage_actions(args):
             image_name = args.override_name
 
     if args.action == "build":
-        builder.build(image_name=image_name, verbose=args.verbose)
+        builder.build(image_name=image_name, verbose=args.verbose, no_cache=args.no_cache)
     elif args.action == "publish":
         builder.publish(image_name=image_name, verbose=args.verbose)
 
