@@ -20,10 +20,12 @@
 import os
 from pkg_resources import resource_filename
 import platform
-from gtmlib.common import dockerize_path
-from gtmlib.common.console import ask_question
 import shutil
 
+import yaml
+
+from gtmlib.common import dockerize_windows_path
+from gtmlib.common.console import ask_question
 
 class DockerConfig(object):
     """Class to manage configuring docker and the docker container for dev
@@ -79,16 +81,18 @@ class DockerConfig(object):
         with open(template_file, 'rt') as template:
             data = template.read()
 
-
         # Replace values
-        if not is_windows:
+        # Note that different templates (chosen above) have a different number of variables. This is reflected in the
+        # logic below.
+        if is_windows:
+            data = data.replace('{% WORKING_DIR %}', dockerize_windows_path(working_dir))
+            if not use_pycharm:
+                data = data.replace('{% GTM_DIR %}', dockerize_windows_path(self.gtm_root))
+        else:
             data = data.replace('{% WORKING_DIR %}', working_dir)
             data = data.replace('{% USER_ID %}', str(uid))
-        else:
-            data = data.replace('{% WORKING_DIR %}', dockerize_path(working_dir))
-
-        if not use_pycharm:
-            data = data.replace('{% GTM_DIR %}', self.gtm_root)
+            if not use_pycharm:
+                data = data.replace('{% GTM_DIR %}', self.gtm_root)
 
         return data
 
@@ -105,13 +109,10 @@ class DockerConfig(object):
         # newline to output files with unix line endings on all platforms
         with open(os.path.join(self.gtm_root, 'setup.sh'), 'wt', newline='\n') as template:
             script = """#!/bin/bash
-export HOST_WORK_DIR={}
 export PYTHONPATH=$PYTHONPATH:/opt/project/gtmlib/resources/submodules/labmanager-common
 export JUPYTER_RUNTIME_DIR=/mnt/share
 cd /opt/project/gtmlib/resources/submodules
-if [ -z "$WINDOWS_HOST" ]; then
-  su giguser
-fi
+su giguser
             """.format(working_dir)
 
             template.write(script)
@@ -129,7 +130,7 @@ fi
             is_windows = False
 
         # Check if doing frontend or backend dev
-        is_backend = ask_question("I want to configure gtm for BACKEND development")
+        is_backend = ask_question("I want to configure gtm for BACKEND development ('n' for frontend)")
         use_pycharm = False
         import_run_configs = False
         if is_backend:
@@ -140,6 +141,7 @@ fi
                 import_run_configs = ask_question("I want to import run configurations into my `gtm` PyCharm project")
 
         # Prompt for working dir
+        # TODO: Check that this path is actually mounted inside Moby (or whatever the root VM is called)
         working_dir = self.prompt_with_default("LabManager Working Directory",
                                                os.path.expanduser(os.path.join("~", 'gigantum')))
 
@@ -148,6 +150,18 @@ fi
         if not is_windows:
             # Set user id
             uid = self.prompt_with_default("Desired User ID", os.getuid())
+
+        # Save our answers
+        answer_fname = os.path.join(self.resources_root, 'setup-answers.yaml')
+        with open(answer_fname, 'w') as answer_file:
+            answers = {'is_windows':  is_windows,
+                       'is_backend':  is_backend,
+                       'use_pycharm': use_pycharm,
+                       'working_dir': working_dir,
+                       'uid':         uid}
+            answer_file.write(yaml.dump(answers, default_flow_style=False))
+
+        print("Answers saved to {}".format(answer_fname))
 
         # Get template text and update with variables
         template_data = self.update_template_data(is_windows, use_pycharm, working_dir, uid)

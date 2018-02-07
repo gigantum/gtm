@@ -59,6 +59,10 @@ yet, go do it). It is located in `gtm/gtmlib/resource/developer_resource/docker-
    `gtm/gtmlib/resources/submodules`:
   - `labmanager-common`
   - `labmanager-service-labbook`
+  
+8. Also in `gtm/gtmlib/resources/submodules`, you can speed up development by marking `labmanager-ui` as "Excluded", otherwise PyCharm will force you to wait
+   each time `node_modules` is rebuilt. (`node_modules` appears to be marked as excluded, but the indexing happens anyway
+   unless manually excluded.)
 
 ### Using Run Configurations
 
