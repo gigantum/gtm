@@ -11,6 +11,7 @@ ENV CONDA_DIR=/opt/conda \
     MINICONDA_VERSION=4.3.31 \
     LC_ALL=C.UTF-8 \
     LANG=C.UTF-8
+ENV PATH=$CONDA_DIR/bin:$PATH
 
 RUN cd /tmp && wget --quiet https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
 echo "7fe70b214bee1143e3e3f0467b71453c *Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh" | md5sum -c - && \

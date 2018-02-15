@@ -361,11 +361,36 @@ class LabManagerBuilder(object):
 
         if verbose:
             [print(ln[list(ln.keys())[0]]) for ln in self.docker_client.api.push('gigantum/labmanager', tag=image_tag,
-                                                                             stream=True, decode=True)]
+                                                                                 stream=True, decode=True)]
         else:
             self.docker_client.images.push('gigantum/labmanager', tag=image_tag)
 
         self.docker_client.images.push('gigantum/labmanager', tag='latest')
+
+    def publish_edge(self, image_tag: str = None, verbose=False) -> None:
+        """Method to push image to the logged in image repository server (e.g hub.docker.com)
+
+        Args:
+            image_tag(str): full image tag to publish
+
+        Returns:
+            None
+        """
+        # If no tag provided, use current repo hash
+        if not image_tag:
+            image_tag = self.get_image_tag()
+
+        # Re-tag current labmanager build as edge locally
+        self.docker_client.images.get('gigantum/labmanager:latest').tag(f'gigantum/labmanager-edge:{image_tag}')
+
+        if verbose:
+            [print(ln[list(ln.keys())[0]]) for ln in self.docker_client.api.push('gigantum/labmanager-edge',
+                                                                                 tag=image_tag,
+                                                                                 stream=True, decode=True)]
+        else:
+            self.docker_client.images.push('gigantum/labmanager-edge', tag=image_tag)
+
+        self.docker_client.images.push('gigantum/labmanager-edge', tag='latest')
 
     def cleanup(self, dev_images=False):
         """Method to clean up old gigantum/labmanager images
