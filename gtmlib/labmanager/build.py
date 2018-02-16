@@ -382,6 +382,7 @@ class LabManagerBuilder(object):
 
         # Re-tag current labmanager build as edge locally
         self.docker_client.images.get('gigantum/labmanager:latest').tag(f'gigantum/labmanager-edge:{image_tag}')
+        self.docker_client.images.get(f'gigantum/labmanager-edge:{image_tag}').tag('gigantum/labmanager-edge:latest')
 
         if verbose:
             [print(ln[list(ln.keys())[0]]) for ln in self.docker_client.api.push('gigantum/labmanager-edge',
