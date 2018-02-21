@@ -8,7 +8,7 @@ RUN apt-get -y update; apt-get -y install git curl gosu
 RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - && apt-get -y install nodejs
 
 # Install babel-node
-RUN npm install -g babel-cli@6.26.0 graphql-cli@1.0.0-beta.4 jest@21.2.1 relay-compiler@1.4.1 webpack@3.3.0 jsdom-global@3.0.2 jsdom@>=10.0.0
+RUN npm install -g babel-cli@6.26.0 jest@21.2.1 relay-compiler@1.5.0 webpack@3.3.0 jsdom-global@3.0.2 jsdom@>=10.0.0
 
 # Install Yarn
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
