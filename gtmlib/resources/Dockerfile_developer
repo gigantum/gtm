@@ -3,7 +3,11 @@ LABEL maintainer="Gigantum <hello@gigantum.io>"
 
 # Install system level dependencies
 RUN apt-get -y update && apt-get -y install build-essential python-dev git supervisor curl gosu \
- redis-server vim emacs zip wget
+ redis-server software-properties-common vim emacs zip wget 
+
+# install git lfs
+RUN add-apt-repository ppa:git-core/ppa && apt-get -y update
+RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get -y install git-lfs
 
 # Install conda
 ENV CONDA_DIR=/opt/conda \
