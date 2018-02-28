@@ -393,6 +393,32 @@ class LabManagerBuilder(object):
 
         self.docker_client.images.push('gigantum/labmanager-edge', tag='latest')
 
+    def publish_demo(self, image_tag: str = None, verbose=False) -> None:
+        """Method to push a cloud demo image to the logged in image repository server (e.g hub.docker.com)
+
+        Args:
+            image_tag(str): full image tag to publish
+
+        Returns:
+            None
+        """
+        # If no tag provided, use current repo hash
+        if not image_tag:
+            image_tag = self.get_image_tag()
+
+        # Re-tag current labmanager build as edge locally
+        self.docker_client.images.get('gigantum/labmanager:latest').tag(f'gigantum/gigantum-cloud-demo:{image_tag}')
+        self.docker_client.images.get(f'gigantum/gigantum-cloud-demo:{image_tag}').tag('gigantum/gigantum-cloud-demo:latest')
+
+        if verbose:
+            [print(ln[list(ln.keys())[0]]) for ln in self.docker_client.api.push('gigantum/gigantum-cloud-demo',
+                                                                                 tag=image_tag,
+                                                                                 stream=True, decode=True)]
+        else:
+            self.docker_client.images.push('gigantum/gigantum-cloud-demo', tag=image_tag)
+
+        self.docker_client.images.push('gigantum/gigantum-cloud-demo', tag='latest')
+
     def cleanup(self, dev_images=False):
         """Method to clean up old gigantum/labmanager images
 

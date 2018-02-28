@@ -92,6 +92,8 @@ def labmanager_actions(args):
         builder.publish(image_tag=image_tag, verbose=args.verbose)
 
         # Print Name of image
+        if not image_tag:
+            image_tag = "latest"
         print("\n\n*** Published LabManager Image: gigantum/labmanager:{}\n".format(image_tag))
 
     elif args.action == "publish-edge":
@@ -103,7 +105,22 @@ def labmanager_actions(args):
         builder.publish_edge(image_tag=image_tag, verbose=args.verbose)
 
         # Print Name of image
+        if not image_tag:
+            image_tag = "latest"
         print("\n\n*** Published LabManager-Edge Image: gigantum/labmanager-edge:{}\n".format(image_tag))
+
+    elif args.action == "publish-demo":
+        image_tag = None
+        if "override_name" in args:
+            if args.override_name:
+                image_tag = args.override_name
+
+        builder.publish_demo(image_tag=image_tag, verbose=args.verbose)
+
+        # Print Name of image
+        if not image_tag:
+            image_tag = "latest"
+        print("\n\n*** Published Demo Image: gigantum/gigantum-cloud-demo:{}\n".format(image_tag))
     elif args.action == "prune":
         builder.cleanup(dev_images=False)
 
@@ -220,6 +237,7 @@ if __name__ == '__main__':
                                 ["test", "Run internal tests on a LabManager Docker image"],
                                 ["publish", "Publish the latest build to Docker Hub"],
                                 ["publish-edge", "Publish the latest build to Docker Hub as an Edge release"],
+                                ["publish-demo", "Publish the latest build to Docker Hub as a Demo release"],
                                 ["prune", "Remove all images except the latest LabManager build"],
                                 ]
 
