@@ -14,6 +14,8 @@ export HOME=/home/giguser
 chown -R giguser:root /opt/run
 chown -R giguser:root /opt/log
 chown -R giguser:root /opt/redis
+chown -R giguser:root /etc/elasticsearch
+chown -R giguser:root /usr/share/elasticsearch
 
 # Setup git config for giguser
 gosu giguser bash -c "git config --global user.email 'noreply@gigantum.io'"

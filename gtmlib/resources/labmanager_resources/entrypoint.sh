@@ -39,6 +39,9 @@ chown -R giguser:root /var/log/nginx/
 chown --silent giguser:root /var/lock/nginx.lock
 chown giguser:root /run/nginx.pid
 chown giguser:root /var/run/docker.sock
+chown -R giguser:root /etc/elasticsearch
+chown -R giguser:root /usr/share/elasticsearch
+
 
 # Not a windows host
 exec gosu giguser "$@"

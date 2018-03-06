@@ -9,6 +9,12 @@ ca-certificates bzip2 gosu redis-server software-properties-common curl
 RUN add-apt-repository ppa:git-core/ppa && apt-get -y update
 RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get -y install git-lfs
 
+# Setup ElasticSearch 
+RUN apt-get -y install apt-transport-https openjdk-8-jre openjdk-8-jdk 
+RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add - 
+RUN echo "deb https://artifacts.elastic.co/packages/5.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-5.x.list 
+RUN apt-get -y update && apt-get -y install elasticsearch  
+
 # Install conda
 ENV CONDA_DIR=/opt/conda \
     SHELL=/bin/bash \
