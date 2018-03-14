@@ -180,6 +180,11 @@ class BaseImageBuilder(object):
         if not build_dirs:
             raise ValueError("No images to build")
 
+        # Make sure minimals are always built first
+        for cnt, base in enumerate(build_dirs):
+            if "minimal" in base:
+                build_dirs.insert(0, build_dirs.pop(cnt))
+
         for cnt, build_dir in enumerate(build_dirs):
             print("({}/{}) Building Base Image: {}".format(cnt+1, len(build_dirs),
                                                            os.path.basename(os.path.normpath(build_dir))))

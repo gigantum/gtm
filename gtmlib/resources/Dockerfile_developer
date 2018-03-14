@@ -71,6 +71,9 @@ COPY developer_resources/supervisord.conf /etc/supervisor/conf.d/supervisord.con
 COPY developer_resources/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod u+x /usr/local/bin/entrypoint.sh
 
+# Setup demo labbook
+COPY awful-intersections-demo.lbk /opt/awful-intersections-demo.lbk
+
 # Expose Ports
 EXPOSE 10000
 EXPOSE 10001
