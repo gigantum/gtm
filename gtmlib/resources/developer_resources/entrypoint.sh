@@ -3,7 +3,6 @@
 # TODO: Generalize Dev Env Vars
 export JUPYTER_RUNTIME_DIR=/mnt/share/jupyter/runtime
 
-
 USER_ID=${LOCAL_USER_ID:-9001}
 echo "Starting with UID : $USER_ID"
 useradd --shell /bin/bash -u $USER_ID -o -c "" -m giguser
@@ -16,6 +15,9 @@ chown -R giguser:root /opt/log
 chown -R giguser:root /opt/redis
 chown -R giguser:root /etc/elasticsearch
 chown -R giguser:root /usr/share/elasticsearch
+mkdir -p /mnt/gigantum/.labmanager/elasticsearch/data
+mkdir -p /mnt/gigantum/.labmanager/elasticsearch/logS
+chown -R giguser:root /mnt/gigantum/.labmanager/elasticsearch
 
 # Setup git config for giguser
 gosu giguser bash -c "git config --global user.email 'noreply@gigantum.io'"
