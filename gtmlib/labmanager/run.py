@@ -22,7 +22,7 @@ import platform
 
 import docker
 
-from gtmlib.common import dockerize_path, DockerVolume
+from gtmlib.common import dockerize_windows_path, DockerVolume
 
 
 class LabManagerRunner(object):
@@ -67,21 +67,20 @@ class LabManagerRunner(object):
         if not share_volume.exists():
             share_volume.create()
 
-        environment_mapping = {'HOST_WORK_DIR': working_dir}
         volume_mapping = {'labmanager_share_vol': {'bind': '/mnt/share', 'mode': 'rw'}}
+        volume_mapping['/var/run/docker.sock'] = {'bind': '/var/run/docker.sock', 'mode': 'rw'}
 
-        # windows docker has several eccentricities
-        #    // for / in /var/run/docker.sock
-        #    //C/a/b/ format for volume C:\\a\\b
         if platform.system() == 'Windows':
+            # HOST_WORK_DIR will be used to mount inside labbook.
+            environment_mapping = {'HOST_WORK_DIR': dockerize_windows_path(working_dir)}
             environment_mapping['WINDOWS_HOST'] = 1
-            volume_mapping[dockerize_path(working_dir)] = {'bind': '/mnt/gigantum', 'mode': 'cached'}
-            volume_mapping['//var/run/docker.sock'] = {'bind': '/var/run/docker.sock', 'mode': 'rw'}
-
+            # Windows does not support cached, but this is silently ignored (as of late Jan 2018)
+            # We convert \ to /
+            volume_mapping[dockerize_windows_path(working_dir)] = {'bind': '/mnt/gigantum', 'mode': 'cached'}
         else:
+            environment_mapping = {'HOST_WORK_DIR': working_dir}
             environment_mapping['LOCAL_USER_ID'] = os.getuid()
             volume_mapping[working_dir] = {'bind': '/mnt/gigantum', 'mode': 'cached'}
-            volume_mapping['/var/run/docker.sock'] = {'bind': '/var/run/docker.sock', 'mode': 'rw'}
 
         self.docker_client.containers.run(image=self.docker_image,
                                           detach=True,

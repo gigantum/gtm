@@ -111,3 +111,4 @@ ENV/
 /gtmlib/resources/submodules/setup.sh
 /setup.sh
 /gtmlib/resources/developer_resources/labmanager-config.yaml
+/gtmlib/resources/developer_resources/setup-answers.yaml

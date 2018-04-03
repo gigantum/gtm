@@ -30,7 +30,7 @@ from git import Repo
 from docker.errors import ImageNotFound, NotFound
 import yaml
 
-from gtmlib.common import ask_question, dockerize_path, get_docker_client, DockerVolume
+from gtmlib.common import ask_question, dockerize_windows_path, get_docker_client, DockerVolume
 
 
 class LabManagerBuilder(object):
@@ -250,7 +250,10 @@ class LabManagerBuilder(object):
             shutil.rmtree(os.path.join(temp_ui_dir, 'build'))
 
         # convert to docker mountable volume name (needed for non-POSIX fs)
-        dkr_vol_path = dockerize_path(temp_ui_dir)
+        if platform.system() == 'Windows':
+            dkr_vol_path = dockerize_windows_path(temp_ui_dir)
+        else:
+            dkr_vol_path = temp_ui_dir
 
         volumes = {dkr_vol_path: {'bind': '/mnt/labmanager-ui', 'mode': 'rw'},
                    self.node_volume.volume_name: {
@@ -358,11 +361,63 @@ class LabManagerBuilder(object):
 
         if verbose:
             [print(ln[list(ln.keys())[0]]) for ln in self.docker_client.api.push('gigantum/labmanager', tag=image_tag,
-                                                                             stream=True, decode=True)]
+                                                                                 stream=True, decode=True)]
         else:
             self.docker_client.images.push('gigantum/labmanager', tag=image_tag)
 
         self.docker_client.images.push('gigantum/labmanager', tag='latest')
+
+    def publish_edge(self, image_tag: str = None, verbose=False) -> None:
+        """Method to push image to the logged in image repository server (e.g hub.docker.com)
+
+        Args:
+            image_tag(str): full image tag to publish
+
+        Returns:
+            None
+        """
+        # If no tag provided, use current repo hash
+        if not image_tag:
+            image_tag = self.get_image_tag()
+
+        # Re-tag current labmanager build as edge locally
+        self.docker_client.images.get('gigantum/labmanager:latest').tag(f'gigantum/labmanager-edge:{image_tag}')
+        self.docker_client.images.get(f'gigantum/labmanager-edge:{image_tag}').tag('gigantum/labmanager-edge:latest')
+
+        if verbose:
+            [print(ln[list(ln.keys())[0]]) for ln in self.docker_client.api.push('gigantum/labmanager-edge',
+                                                                                 tag=image_tag,
+                                                                                 stream=True, decode=True)]
+        else:
+            self.docker_client.images.push('gigantum/labmanager-edge', tag=image_tag)
+
+        self.docker_client.images.push('gigantum/labmanager-edge', tag='latest')
+
+    def publish_demo(self, image_tag: str = None, verbose=False) -> None:
+        """Method to push a cloud demo image to the logged in image repository server (e.g hub.docker.com)
+
+        Args:
+            image_tag(str): full image tag to publish
+
+        Returns:
+            None
+        """
+        # If no tag provided, use current repo hash
+        if not image_tag:
+            image_tag = self.get_image_tag()
+
+        # Re-tag current labmanager build as edge locally
+        self.docker_client.images.get('gigantum/labmanager:latest').tag(f'gigantum/gigantum-cloud-demo:{image_tag}')
+        self.docker_client.images.get(f'gigantum/gigantum-cloud-demo:{image_tag}').tag('gigantum/gigantum-cloud-demo:latest')
+
+        if verbose:
+            [print(ln[list(ln.keys())[0]]) for ln in self.docker_client.api.push('gigantum/gigantum-cloud-demo',
+                                                                                 tag=image_tag,
+                                                                                 stream=True, decode=True)]
+        else:
+            self.docker_client.images.push('gigantum/gigantum-cloud-demo', tag=image_tag)
+
+        self.docker_client.images.push('gigantum/gigantum-cloud-demo', tag='latest')
 
     def cleanup(self, dev_images=False):
         """Method to clean up old gigantum/labmanager images

@@ -69,7 +69,13 @@ The `gtm` repo contents:
     
  `/gtmlib/common` - Subpackage for `gtm` functionality common across components
  
- `/gtmlib/labmanager` - Subpackage for functionality related to the LabManager application
+ `/gtmlib/labmanager` - Subpackage for functionality related to building the "production" app container
+ 
+ `/gtmlib/developer` - Subpackage for functionality related to building the "developer" app container
+ 
+ `/gtmlib/circleci` - Subpackage for functionality related to building containers for CircleCI
+ 
+ `/gtmlib/baseimage` - Subpackage for functionality related to building gigantum bases
  
  `/gtmlib/resources` - Location for all build resources. This is where external repos are included as submodule refs
  
@@ -95,6 +101,7 @@ Where the supported system **components** are:
 - **labmanager** - the client application for interacting with Gigantum LabBooks
 - **developer** - tooling for building and using developer containers
 - **base-image** - tooling for building and publishing Base Images maintained by Gigantum
+- **circleci** - tooling for building and publishing CircleCI images
     
 Each system component can have different supported commands based on the actions that are available. They are summarized
 below:
@@ -193,8 +200,18 @@ below:
     - `publish` - command to publish built images to hub.docker.com. This command will reference a tracking file and
     only publish images that have been previously built, but not yet published.
     
-        *Note: Currently images are pushing to `gtmdev` organization on hub.docker.com. You must be in this org to push
-        in the future we'll push to our proper organization*
+- **circleci** 
+    When you update a dependency (e.g. edit the requirements.txt file) in one of the core app repositories you need to
+    rebuild the container for tests to pass on circle. You should do this and include the changes to circleci config
+    in your PR, so when merged tests continue to pass.
+    
+    - `build-common` - command to build the docker image for CircleCI when testing the `lmcommon` repository. This
+    method will build and push a new image to DockerHub. The resulting "organization/repo:tag" string that is printed should be pasted
+    into the circleCI config file in the `lmcommon` repo to update. Commit and push and CircleCI will use the new image.
+    
+     - `build-api` - command to build the docker image for CircleCI when testing the `labmanager-service-labbook` repository. This
+    method will build and push a new image to DockerHub. The resulting "organization/repo:tag" string that is printed should be pasted
+    into the circleCI config file in the `labmanager-service-labbook` repo to update. Commit and push and CircleCI will use the new image.
 
 
 ## Testing
@@ -209,13 +226,18 @@ pytest
 
 ## Windows
 
+We have tested and support using conda as the package manager on Windows.  Please install conda _For local user only (recommended)_.  This allows the local user to manipulate the conda environment.  Then you can run conda out of the anaconda shell.  It is recommended to add conda to your path.  In `Edit the System Environmental Variables -> Environment Variables` edit the `PATH` variable and add
+```
+%USERPROFILE%\Anaconda3
+%USERPROFILE%\Anaconda3\Scripts
+```
 Developing on windows has two additional depencies.  First, Windows requires python extensions for windows.  One must install an additional package.
 ```
 pip install pypiwin32
 ```
 The second requirement applies only to **devloper** mode in which the code from the host machine is linked into the labmanager docker container.  Windows does not allow links by non-administrative users by default.  On windows, navigate the following path from the launcher:
 ```
-Local Scurity Policy ->
+Local Security Policy ->
 	Local Policies->
 		User Rights Assignment->
 			Create symbolic links
@@ -224,4 +246,4 @@ Double click on this and then select ```Add user or Group```.  In the box that s
 ```
 Everyone
 ```
-Then you must restart your machine.  This policy is overly broad.  It is really only the Docker user that needs to make links, but this is a reasonable solution to allow Docker this abiliy.  It is hard to identify the Docker user.
+Then you must restart your machine.  This policy is overly broad.  It is really only the Docker user that needs to make links, but this is a reasonable solution to allow Docker this ability.

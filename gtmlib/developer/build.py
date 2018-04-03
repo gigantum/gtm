@@ -32,7 +32,7 @@ import docker
 from docker.errors import NotFound
 import yaml
 
-from gtmlib.common import ask_question, dockerize_path, get_docker_client, DockerVolume
+from gtmlib.common import ask_question, dockerize_windows_path, get_docker_client, DockerVolume
 from gtmlib.labmanager.build import LabManagerBuilder
 
 
@@ -42,7 +42,19 @@ class LabManagerDevBuilder(LabManagerBuilder):
     def __init__(self):
         LabManagerBuilder.__init__(self)
         self.docker_build_dir = os.path.expanduser(resource_filename("gtmlib", "resources"))
+
+        # We saved our answers during developer setup
+        setup_answers_path = os.path.join(self.docker_build_dir, 'developer_resources', 'setup-answers.yaml')
+        with open(setup_answers_path) as setup_answers_file:
+            self.setup_answers = yaml.load(setup_answers_file.read())
+
         self.ui_app_dir = os.path.join(self.docker_build_dir, "submodules", 'labmanager-ui')
+
+        # convert to docker mountable volume name (needed for non-POSIX fs)
+        if platform.system() == 'Windows':
+            self.dkr_vol_path = dockerize_windows_path(self.ui_app_dir)
+        else:
+            self.dkr_vol_path = self.ui_app_dir
 
         self.docker_client = get_docker_client()
         self.share_volume = DockerVolume("labmanager_share_vol", client=self.docker_client)
@@ -131,8 +143,6 @@ class LabManagerDevBuilder(LabManagerBuilder):
             None
         """
         print(" - running `yarn relay`...")
-        # convert to docker mountable volume name (needed for non-POSIX fs)
-        dkr_vol_path = dockerize_path(self.ui_app_dir)
 
         relay_container = None
         try:
@@ -144,7 +154,7 @@ class LabManagerDevBuilder(LabManagerBuilder):
                                                                 detach=True,
                                                                 init=True,
                                                                 environment=self._get_docker_run_env_vars(),
-                                                                volumes={dkr_vol_path: {'bind': '/mnt/src',
+                                                                volumes={self.dkr_vol_path: {'bind': '/mnt/src',
                                                                                         'mode': 'rw'},
                                                                          self.node_volume.volume_name: {
                                                                              "bind": '/mnt/node_build',
@@ -159,7 +169,7 @@ class LabManagerDevBuilder(LabManagerBuilder):
 
             # docker cp the files out
             subprocess.run(["docker", "cp",
-                            '{}:/mnt/node_build/src/'.format(container_name),
+                            '{}:/mnt/node_build/src'.format(container_name),
                             self.ui_app_dir], stdout=subprocess.PIPE, check=True)
 
         finally:
@@ -232,9 +242,6 @@ class LabManagerDevBuilder(LabManagerBuilder):
         # Use container to run npm install into the labmanager-ui repo
         print(" - Installing node packages to run UI in debug mode...this may take awhile...")
 
-        # convert to docker mountable volume name (needed for non-POSIX fs)
-        dkr_vol_path = dockerize_path(self.ui_app_dir)
-
         command = 'sh -c "cp -a /mnt/src/* /mnt/node_build && cd /mnt/node_build && yarn install"'
 
         # launch the dev container to install node packages
@@ -248,7 +255,7 @@ class LabManagerDevBuilder(LabManagerBuilder):
                                                                 detach=True,
                                                                 init=True,
                                                                 environment=self._get_docker_run_env_vars(),
-                                                                volumes={dkr_vol_path: {'bind': '/mnt/src',
+                                                                volumes={self.dkr_vol_path: {'bind': '/mnt/src',
                                                                                         'mode': 'rw'},
                                                                          self.node_volume.volume_name: {
                                                                              "bind": '/mnt/node_build',
@@ -264,7 +271,7 @@ class LabManagerDevBuilder(LabManagerBuilder):
                                                                 detach=True,
                                                                 init=True,
                                                                 environment=self._get_docker_run_env_vars(),
-                                                                volumes={dkr_vol_path: {'bind': '/mnt/src',
+                                                                volumes={self.dkr_vol_path: {'bind': '/mnt/src',
                                                                                         'mode': 'rw'},
                                                                          self.node_volume.volume_name: {
                                                                              "bind": '/mnt/node_build',
@@ -289,20 +296,21 @@ class LabManagerDevBuilder(LabManagerBuilder):
                                                                detach=True,
                                                                init=True,
                                                                environment=self._get_docker_run_env_vars(),
-                                                               volumes={dkr_vol_path: {'bind': '/mnt/src',
+                                                               volumes={self.dkr_vol_path: {'bind': '/mnt/src',
                                                                                        'mode': 'rw'},
                                                                         self.node_volume.volume_name: {
                                                                             "bind": '/mnt/node_build',
                                                                             'mode': 'rw'}
                                                                         })
 
-            # Make node module dir if it doesn't exist
+            #  Make node module dir if it doesn't exist
             node_dir = os.path.join(self.ui_app_dir, 'node_modules')
-            if not node_dir:
-                os.makedirs(node_dir)
+            os.makedirs(node_dir, exist_ok=True)
 
-            # docker cp the files out
-            src_str = "{}:/mnt/node_build/node_modules".format(node_container.name)
+            # docker cp the files out - trailing /. means copy contents, not directory itself
+            # TODO: If we're developing on the backend, this is more expensive than we probably need.
+            # We could try to checkpoint or optimize this step at some point.
+            src_str = "{}:/mnt/node_build/node_modules/.".format(node_container.name)
             subprocess.run(["docker", "cp", src_str, node_dir], stdout=subprocess.PIPE, check=True)
 
         finally:

@@ -50,13 +50,13 @@ class LabManagerTester(object):
 
         # Run the type-checker on lmcommon
         [print(p.decode('UTF-8'), end='') for p in container.exec_run(
-            "/usr/local/bin/entrypoint.sh python3.6 -m mypy /opt/labmanager-common --ignore-missing-imports",
+            "/usr/local/bin/entrypoint.sh /opt/conda/bin/python -m mypy /opt/labmanager-common --ignore-missing-imports",
             stream=True)]
 
         # Run all py.test unit tests
         print("\n** Running unit tests\n")
 
-        [print(p.decode('UTF-8'), end='') for p in container.exec_run("/usr/local/bin/entrypoint.sh py.test /opt",
+        [print(p.decode('UTF-8'), end='') for p in container.exec_run("/usr/local/bin/entrypoint.sh /opt/conda/bin/py.test /opt",
                                                                       stream=True,
                                                                       environment=env_var)]
 

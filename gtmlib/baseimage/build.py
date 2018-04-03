@@ -89,7 +89,7 @@ class BaseImageBuilder(object):
         with open(self.tracking_file, "wt") as f:
             json.dump(data, f)
 
-    def _build_image(self, build_dir: str, verbose=False) -> str:
+    def _build_image(self, build_dir: str, verbose=False, no_cache=False) -> str:
         """
 
         Args:
@@ -101,19 +101,32 @@ class BaseImageBuilder(object):
         client = docker.from_env()
 
         # Generate tags for both the named and latest versions
-        base_tag = "gigdev/{}".format(os.path.basename(os.path.normpath(build_dir)))
-
-        # TODO: remove temporary namespace reference when moving public
-        #base_tag = "gigantum/{}".format(os.path.basename(os.path.normpath(build_dir)))
+        base_tag = "gigantum/{}".format(os.path.basename(os.path.normpath(build_dir)))
         named_tag = "{}:{}".format(base_tag, self._generate_image_tag_suffix())
+
+        # If a "minimal" image that could be the source for other images, you should pull, otherwise, you shouldn't
+        if "minimal" in base_tag:
+            pull = True
+        else:
+            pull = False
 
         if verbose:
             [print(ln[list(ln.keys())[0]], end='') for ln in client.api.build(path=build_dir,
                                                                               tag=named_tag,
-                                                                              pull=True, rm=True,
+                                                                              nocache=no_cache,
+                                                                              pull=pull, rm=True,
                                                                               stream=True, decode=True)]
         else:
-            client.images.build(path=build_dir, tag=named_tag, pull=True)
+            client.images.build(path=build_dir, tag=named_tag, pull=True, nocache=no_cache)
+
+        # Tag with latest in case images depend on each other. Will not get published.
+        client.images.get(named_tag).tag(f"{base_tag}:latest")
+
+        # Verify the desired image built successfully
+        try:
+            client.images.get(named_tag)
+        except NotFound:
+            raise ValueError("Image Build Failed!")
 
         return named_tag
 
@@ -137,11 +150,13 @@ class BaseImageBuilder(object):
         else:
             client.images.push(image, tag=tag)
 
-    def build(self, image_name: str = None, verbose=False) -> None:
+    def build(self, image_name: str = None, verbose=False, no_cache=False) -> None:
         """Method to build all, or a single image based on the dockerfiles stored within the base-image submodule
 
         Args:
             image_name(str): Name of a base image to build. If omitted all are built
+            verbose(bool): flag indication if output should print to the console
+            no_cache(bool): flag indicating if the docker cache should be ignored
 
         Returns:
             None
@@ -165,11 +180,16 @@ class BaseImageBuilder(object):
         if not build_dirs:
             raise ValueError("No images to build")
 
+        # Make sure minimals are always built first
+        for cnt, base in enumerate(build_dirs):
+            if "minimal" in base:
+                build_dirs.insert(0, build_dirs.pop(cnt))
+
         for cnt, build_dir in enumerate(build_dirs):
             print("({}/{}) Building Base Image: {}".format(cnt+1, len(build_dirs),
                                                            os.path.basename(os.path.normpath(build_dir))))
             # Build each image
-            image_tag = self._build_image(build_dir, verbose)
+            image_tag = self._build_image(build_dir, verbose=verbose, no_cache=no_cache)
 
             # Update tracking file
             self._update_tracking_file(image_tag, built=True, published=False)

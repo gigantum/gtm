@@ -24,6 +24,7 @@ import sys
 from gtmlib import labmanager
 from gtmlib import developer
 from gtmlib import baseimage
+from gtmlib import circleci
 
 
 def format_action_help(actions):
@@ -92,7 +93,35 @@ def labmanager_actions(args):
         builder.publish(image_tag=image_tag, verbose=args.verbose)
 
         # Print Name of image
+        if not image_tag:
+            image_tag = "latest"
         print("\n\n*** Published LabManager Image: gigantum/labmanager:{}\n".format(image_tag))
+
+    elif args.action == "publish-edge":
+        image_tag = None
+        if "override_name" in args:
+            if args.override_name:
+                image_tag = args.override_name
+
+        builder.publish_edge(image_tag=image_tag, verbose=args.verbose)
+
+        # Print Name of image
+        if not image_tag:
+            image_tag = "latest"
+        print("\n\n*** Published LabManager-Edge Image: gigantum/labmanager-edge:{}\n".format(image_tag))
+
+    elif args.action == "publish-demo":
+        image_tag = None
+        if "override_name" in args:
+            if args.override_name:
+                image_tag = args.override_name
+
+        builder.publish_demo(image_tag=image_tag, verbose=args.verbose)
+
+        # Print Name of image
+        if not image_tag:
+            image_tag = "latest"
+        print("\n\n*** Published Demo Image: gigantum/gigantum-cloud-demo:{}\n".format(image_tag))
     elif args.action == "prune":
         builder.cleanup(dev_images=False)
 
@@ -191,10 +220,30 @@ def baseimage_actions(args):
             image_name = args.override_name
 
     if args.action == "build":
-        builder.build(image_name=image_name, verbose=args.verbose)
+        builder.build(image_name=image_name, verbose=args.verbose, no_cache=args.no_cache)
     elif args.action == "publish":
         builder.publish(image_name=image_name, verbose=args.verbose)
 
+    else:
+        print("Error: Unsupported action provided: {}".format(args.action), file=sys.stderr)
+        sys.exit(1)
+
+
+def circleci_actions(args):
+    """Method to provide logic and perform actions for the circleci component
+
+    Args:
+        args(Namespace): Parsed arguments
+
+    Returns:
+        None
+    """
+    builder = circleci.CircleCIImageBuilder()
+
+    if args.action == 'build-common':
+        builder.build(repo_name='lmcommon', verbose=args.verbose, no_cache=args.no_cache)
+    elif args.action == "build-api":
+        builder.build(repo_name='labmanager-service-labbook', verbose=args.verbose)
     else:
         print("Error: Unsupported action provided: {}".format(args.action), file=sys.stderr)
         sys.exit(1)
@@ -208,6 +257,8 @@ if __name__ == '__main__':
                                 ["stop", "Stop a LabManager Docker image"],
                                 ["test", "Run internal tests on a LabManager Docker image"],
                                 ["publish", "Publish the latest build to Docker Hub"],
+                                ["publish-edge", "Publish the latest build to Docker Hub as an Edge release"],
+                                ["publish-demo", "Publish the latest build to Docker Hub as a Demo release"],
                                 ["prune", "Remove all images except the latest LabManager build"],
                                 ]
 
@@ -220,6 +271,9 @@ if __name__ == '__main__':
 
     components['base-image'] = [["build", "Build all available base images"],
                                 ["publish", "Publish all available base images to docker hub"]]
+
+    components['circleci'] = [["build-common", "Build the CircleCI container for the `lmcommon` repo"],
+                              ["build-api", "Build the CircleCI container for the `labmanager-service-labbook` repo"]]
 
     # Prep the help string
     help_str = format_component_help(components)
@@ -260,3 +314,6 @@ if __name__ == '__main__':
     elif args.component == "base-image":
         # Base Image Selected
         baseimage_actions(args)
+    elif args.component == "circleci":
+        # CircleCI Selected
+        circleci_actions(args)

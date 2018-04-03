@@ -22,11 +22,11 @@ import os
 import re
 
 
-def dockerize_path(dkrpath: str) -> str:
+def dockerize_windows_path(dkrpath: str) -> str:
     """Returns a path that can be mounted as a docker volume on windows
-        Docker uses non-standard formats for windows mounts.
-        This routine converts C:\\a\\b -> //C/a/b on windows and does
-        nothing on posix systems.
+       Docker uses non-standard formats for windows mounts. Note that different components of the docker ecosystem may
+       support a different set of formats for paths. This one seems to work across docker cp, docker compose and
+       command-line volume mounts on Windows. Specifically, this routine converts C:\a\b -> /C/a/b
 
     Args:
         dkrpath(str): a python path
@@ -34,12 +34,4 @@ def dockerize_path(dkrpath: str) -> str:
     Returns:
         str: path that can be handed to Docker for a volume mount
     """
-    # Docker does not take ntpath formatted strings as volume mounts.
-    # detect if it's a volume path and rewrite the string.
-    if os.path.__name__ == 'ntpath':
-        # for windows switch the slashes and then sub the drive letter
-        return re.sub('(^[A-Z]):(.*$)', '//\g<1>\g<2>', dkrpath.replace('\\', '/'))
-    else:
-        return dkrpath 
-
-
+    return re.sub('(^[A-Z]):(.*$)', '/\g<1>\g<2>', dkrpath.replace('\\', '/'))
