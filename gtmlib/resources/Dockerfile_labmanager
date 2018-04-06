@@ -76,6 +76,9 @@ COPY labmanager_resources/supervisord.conf /etc/supervisor/conf.d/supervisord.co
 COPY labmanager_resources/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod u+x /usr/local/bin/entrypoint.sh
 
+# Setup demo labbook
+COPY awful-intersections-demo.lbk /opt/awful-intersections-demo.lbk
+
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Expose Ports

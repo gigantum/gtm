@@ -16,7 +16,7 @@ chown -R giguser:root /opt/redis
 chown -R giguser:root /etc/elasticsearch
 chown -R giguser:root /usr/share/elasticsearch
 mkdir -p /mnt/gigantum/.labmanager/elasticsearch/data
-mkdir -p /mnt/gigantum/.labmanager/elasticsearch/logS
+mkdir -p /mnt/gigantum/.labmanager/elasticsearch/logs
 chown -R giguser:root /mnt/gigantum/.labmanager/elasticsearch
 
 # Setup git config for giguser
