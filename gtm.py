@@ -24,6 +24,7 @@ import sys
 from gtmlib import labmanager
 from gtmlib import developer
 from gtmlib import baseimage
+from gtmlib import circleci
 
 
 def format_action_help(actions):
@@ -228,6 +229,26 @@ def baseimage_actions(args):
         sys.exit(1)
 
 
+def circleci_actions(args):
+    """Method to provide logic and perform actions for the circleci component
+
+    Args:
+        args(Namespace): Parsed arguments
+
+    Returns:
+        None
+    """
+    builder = circleci.CircleCIImageBuilder()
+
+    if args.action == 'build-common':
+        builder.build(repo_name='lmcommon', verbose=args.verbose, no_cache=args.no_cache)
+    elif args.action == "build-api":
+        builder.build(repo_name='labmanager-service-labbook', verbose=args.verbose)
+    else:
+        print("Error: Unsupported action provided: {}".format(args.action), file=sys.stderr)
+        sys.exit(1)
+
+
 if __name__ == '__main__':
     # Setup supported components and commands
     components = {}
@@ -250,6 +271,9 @@ if __name__ == '__main__':
 
     components['base-image'] = [["build", "Build all available base images"],
                                 ["publish", "Publish all available base images to docker hub"]]
+
+    components['circleci'] = [["build-common", "Build the CircleCI container for the `lmcommon` repo"],
+                              ["build-api", "Build the CircleCI container for the `labmanager-service-labbook` repo"]]
 
     # Prep the help string
     help_str = format_component_help(components)
@@ -290,3 +314,6 @@ if __name__ == '__main__':
     elif args.component == "base-image":
         # Base Image Selected
         baseimage_actions(args)
+    elif args.component == "circleci":
+        # CircleCI Selected
+        circleci_actions(args)

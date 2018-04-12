@@ -27,7 +27,7 @@ import datetime
 import sys
 
 from git import Repo
-from docker.errors import ImageNotFound, NotFound
+from docker.errors import ImageNotFound, NotFound, APIError
 import yaml
 
 from gtmlib.common import ask_question, dockerize_windows_path, get_docker_client, DockerVolume
@@ -451,7 +451,11 @@ class LabManagerBuilder(object):
 
         print(f"\nRemoving old {image_name} images:")
         for image in images:
-            if any(['latest' in x for x in image.tags]):
-                continue
-            print(f" - Removing {image.tags[0]}")
-            self.docker_client.images.remove(image.id)
+            if image.tags:
+                if any(['latest' in x for x in image.tags]):
+                    continue
+                print(f" - Removing {image.tags[0]}")
+                try:
+                    self.docker_client.images.remove(image.id)
+                except APIError:
+                    print(f"Error trying to remove image, skipping {image.id}")
