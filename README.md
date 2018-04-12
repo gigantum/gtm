@@ -69,7 +69,13 @@ The `gtm` repo contents:
     
  `/gtmlib/common` - Subpackage for `gtm` functionality common across components
  
- `/gtmlib/labmanager` - Subpackage for functionality related to the LabManager application
+ `/gtmlib/labmanager` - Subpackage for functionality related to building the "production" app container
+ 
+ `/gtmlib/developer` - Subpackage for functionality related to building the "developer" app container
+ 
+ `/gtmlib/circleci` - Subpackage for functionality related to building containers for CircleCI
+ 
+ `/gtmlib/baseimage` - Subpackage for functionality related to building gigantum bases
  
  `/gtmlib/resources` - Location for all build resources. This is where external repos are included as submodule refs
  
@@ -95,6 +101,7 @@ Where the supported system **components** are:
 - **labmanager** - the client application for interacting with Gigantum LabBooks
 - **developer** - tooling for building and using developer containers
 - **base-image** - tooling for building and publishing Base Images maintained by Gigantum
+- **circleci** - tooling for building and publishing CircleCI images
     
 Each system component can have different supported commands based on the actions that are available. They are summarized
 below:
@@ -193,8 +200,18 @@ below:
     - `publish` - command to publish built images to hub.docker.com. This command will reference a tracking file and
     only publish images that have been previously built, but not yet published.
     
-        *Note: Currently images are pushing to `gtmdev` organization on hub.docker.com. You must be in this org to push
-        in the future we'll push to our proper organization*
+- **circleci** 
+    When you update a dependency (e.g. edit the requirements.txt file) in one of the core app repositories you need to
+    rebuild the container for tests to pass on circle. You should do this and include the changes to circleci config
+    in your PR, so when merged tests continue to pass.
+    
+    - `build-common` - command to build the docker image for CircleCI when testing the `lmcommon` repository. This
+    method will build and push a new image to DockerHub. The resulting "organization/repo:tag" string that is printed should be pasted
+    into the circleCI config file in the `lmcommon` repo to update. Commit and push and CircleCI will use the new image.
+    
+     - `build-api` - command to build the docker image for CircleCI when testing the `labmanager-service-labbook` repository. This
+    method will build and push a new image to DockerHub. The resulting "organization/repo:tag" string that is printed should be pasted
+    into the circleCI config file in the `labmanager-service-labbook` repo to update. Commit and push and CircleCI will use the new image.
 
 
 ## Testing

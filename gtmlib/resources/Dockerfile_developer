@@ -60,6 +60,7 @@ COPY submodules/labmanager-common/lmcommon/logging/logging.json.default /etc/gig
 RUN mkdir -p /mnt/gigantum && mkdir /opt/node_build
 
 # Setup ElasticSearch 
+RUN apt-get update
 RUN apt-get -y install apt-transport-https openjdk-8-jre openjdk-8-jdk 
 RUN wget -qO - https://artifacts.elastic.co/GPG-KEY-elasticsearch | apt-key add - 
 RUN echo "deb https://artifacts.elastic.co/packages/5.x/apt stable main" | tee -a /etc/apt/sources.list.d/elastic-5.x.list 

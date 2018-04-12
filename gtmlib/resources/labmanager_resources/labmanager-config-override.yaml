@@ -2,4 +2,8 @@
 # labmanager-common/lmcommon/configuration/config/labmanager.yaml.default
 git:
   working_directory: "/mnt/gigantum"
+<<<<<<< HEAD
   lfs_enabled: true
+=======
+  lfs_enabled: true
+>>>>>>> 1d0a88de5546eafcce33a27aa13e3f00959615e3

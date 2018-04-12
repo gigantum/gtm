@@ -1,0 +1,51 @@
+FROM ubuntu:16.04
+LABEL maintainer="Gigantum <hello@gigantum.io>"
+
+# Install system level dependencies
+RUN apt-get -y update && apt-get -y install build-essential python-dev git \
+ redis-server software-properties-common curl zip wget sudo
+
+# install git lfs
+RUN add-apt-repository ppa:git-core/ppa && apt-get -y update
+RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get -y install git-lfs
+
+# Install conda
+ENV CONDA_DIR=/opt/conda \
+    SHELL=/bin/bash \
+    MINICONDA_VERSION=4.3.31 \
+    LC_ALL=C.UTF-8 \
+    LANG=C.UTF-8 \
+    GTM_DEVELOPER=1
+
+# Setup circleci user
+RUN useradd -ms /bin/bash circleci
+
+RUN cd /tmp && wget --quiet https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
+echo "7fe70b214bee1143e3e3f0467b71453c *Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh" | md5sum -c - && \
+/bin/bash Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -f -b -p $CONDA_DIR && \
+rm Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
+$CONDA_DIR/bin/conda config --system --prepend channels conda-forge && \
+$CONDA_DIR/bin/conda config --system --set auto_update_conda false && \
+$CONDA_DIR/bin/conda config --system --set show_channel_urls true && \
+$CONDA_DIR/bin/conda update --all --quiet --yes && \
+$CONDA_DIR/bin/conda create --quiet --yes -n py27 python=2.7 anaconda && \
+$CONDA_DIR/bin/conda create --quiet --yes -n py36 python=3.6 anaconda && \
+$CONDA_DIR/bin/conda clean -tpsy
+
+# Setup path and python path
+ENV PATH=$CONDA_DIR/bin:$PATH
+
+# Install python deps and testing deps
+COPY submodules/labmanager-common/requirements.txt /opt/labmanager-common-requirements.txt
+RUN pip install -r /opt/labmanager-common-requirements.txt && \
+    pip install coveralls pytest-cov pytest-xdist
+
+# Set up working dir, required for import mocks
+RUN mkdir -p /mnt/gigantum && sudo chown -R circleci:circleci /mnt/gigantum && \
+    mkdir /home/circleci/gigantum && sudo chown -R circleci:circleci /home/circleci/gigantum
+
+# Finish setting up user
+USER circleci
+WORKDIR /home/circleci
+
+CMD ["/bin/bash"]
