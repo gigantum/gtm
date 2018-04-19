@@ -100,7 +100,7 @@ class DockerUtil(object):
                 share_volume.create()
 
             print("Running docker up. CTRL+C to exit.")
-            cmd = 'docker-compose -f {} run --service-ports labmanager'.format(
+            cmd = 'docker-compose -f {} run -T --service-ports labmanager'.format(
                                                                                os.path.join(self._docker_compose_dir(),
                                                                                'docker-compose.yml'))
             try:
