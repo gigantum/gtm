@@ -94,9 +94,9 @@ class CircleCIImageBuilder(object):
                                                                               tag=named_tag,
                                                                               nocache=no_cache,
                                                                               pull=pull, rm=True,
-                                                                              stream=True, decode=True)]
+                                                                              decode=True)]
         else:
-            client.images.build(path=docker_build_dir,  ockerfile=docker_file, tag=named_tag,
+            client.images.build(path=docker_build_dir,  dockerfile=docker_file, tag=named_tag,
                                 pull=True, nocache=no_cache)
 
         # Tag with latest in case images depend on each other. Will not get published.

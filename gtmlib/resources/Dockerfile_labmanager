@@ -3,7 +3,7 @@ LABEL maintainer="Gigantum <hello@gigantum.io>"
 
 # Install system level dependencies
 RUN apt-get -y update && apt-get -y --no-install-recommends install build-essential git nginx supervisor wget openssl \
-ca-certificates bzip2 gosu redis-server software-properties-common curl
+ca-certificates bzip2 gosu redis-server software-properties-common curl libjpeg-dev
 
 # install git lfs
 RUN add-apt-repository ppa:git-core/ppa && apt-get -y update
