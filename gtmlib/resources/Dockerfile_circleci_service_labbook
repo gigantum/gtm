@@ -1,4 +1,4 @@
-FROM gigantum/circleci-common:423e3e76-2018-03-29
+FROM gigantum/circleci-common:13711037-2018-05-09
 LABEL maintainer="Gigantum <hello@gigantum.io>"
 
 USER root
