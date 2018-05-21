@@ -3,7 +3,7 @@ LABEL maintainer="Gigantum <hello@gigantum.io>"
 
 # Install system level dependencies
 RUN apt-get -y update && apt-get -y install build-essential python-dev git \
- redis-server software-properties-common curl zip wget sudo
+ redis-server software-properties-common curl zip wget sudo libjpeg-dev
 
 # install git lfs
 RUN add-apt-repository ppa:git-core/ppa && apt-get -y update
