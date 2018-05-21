@@ -230,7 +230,7 @@ class LabManagerDevBuilder(LabManagerBuilder):
                                                                   tag=named_image,
                                                                   labels=labels, nocache=no_cache,
                                                                   pull=True, rm=True,
-                                                                  decode=True)]
+                                                                  stream=True, decode=True)]
         else:
             self.docker_client.images.build(path=self.docker_build_dir, dockerfile='Dockerfile_developer',
                                             tag=named_image, nocache=no_cache,
