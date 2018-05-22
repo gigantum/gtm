@@ -15,9 +15,6 @@ chown -R giguser:root /opt/run
 chown -R giguser:root /opt/log
 chown -R giguser:root /opt/redis
 
-# TODO: Remove once package introspection occurs in target container
-chown -R giguser:root /opt/conda/pkgs/cache
-
 # Setup git config for giguser
 gosu giguser bash -c "git config --global user.email 'noreply@gigantum.io'"
 gosu giguser bash -c "git config --global user.name 'Gigantum AutoCommit'"
