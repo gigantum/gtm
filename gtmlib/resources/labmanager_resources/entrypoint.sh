@@ -43,6 +43,6 @@ chown --silent giguser:root /var/lock/nginx.lock
 chown giguser:root /run/nginx.pid
 chown giguser:root /var/run/docker.sock
 
-# Not a windows host
+gosu giguser git lfs install
 exec gosu giguser "$@"
 
