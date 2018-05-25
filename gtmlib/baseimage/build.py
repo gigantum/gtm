@@ -84,7 +84,7 @@ class BaseImageBuilder(object):
             data = {}
 
         # Update the dictionary setting publish to False
-        data[image_tag] = {"build": built, "publish": published}
+        data[image_tag] = {"isBuilt": built, "isPublished": published}
 
         with open(self.tracking_file, "wt") as f:
             json.dump(data, f)
@@ -213,15 +213,18 @@ class BaseImageBuilder(object):
         else:
             raise ValueError("You must first build images locally before publishing")
 
+        # Prune out all but unpublished images
+        tags_to_push = [x for x in list(tracking_data.keys()) if tracking_data[x]['isPublished'] is False]
+
         if image_name:
             # Prune out all but the image to publish
-            if image_name in tracking_data:
-                tracking_data = tracking_data[image_name]
+            if image_name in tags_to_push:
+                tags_to_push = [image_name]
             else:
                 raise ValueError("Image `{}` not found.".format(image_name))
 
-        num_images = len((list(tracking_data.keys())))
-        for cnt, image_tag in enumerate(list(tracking_data.keys())):
+        num_images = len(tags_to_push)
+        for cnt, image_tag in enumerate(tags_to_push):
             print("({}/{}) Publishing Base Image: {}".format(cnt+1, num_images, image_tag))
 
             # Publish each image

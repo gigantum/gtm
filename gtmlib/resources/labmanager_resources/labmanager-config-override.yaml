@@ -3,3 +3,6 @@
 git:
   working_directory: "/mnt/gigantum"
   lfs_enabled: true
+flask:
+  DEBUG: false
+  TESTING: false
