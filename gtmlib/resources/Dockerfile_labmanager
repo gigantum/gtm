@@ -1,42 +1,25 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 LABEL maintainer="Gigantum <hello@gigantum.io>"
 
-# Install system level dependencies
-RUN apt-get -y update && apt-get -y --no-install-recommends install build-essential git nginx supervisor wget openssl \
-ca-certificates bzip2 gosu redis-server software-properties-common curl
-
-# install git lfs
-RUN add-apt-repository ppa:git-core/ppa && apt-get -y update
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get -y install git-lfs
-
-# Install conda
-ENV CONDA_DIR=/opt/conda \
-    SHELL=/bin/bash \
-    MINICONDA_VERSION=4.3.31 \
-    LC_ALL=C.UTF-8 \
-    LANG=C.UTF-8
-ENV PATH=$CONDA_DIR/bin:$PATH
-
-RUN cd /tmp && wget --quiet https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
-echo "7fe70b214bee1143e3e3f0467b71453c *Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh" | md5sum -c - && \
-/bin/bash Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -f -b -p $CONDA_DIR && \
-rm Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
-$CONDA_DIR/bin/conda config --system --prepend channels conda-forge && \
-$CONDA_DIR/bin/conda config --system --set auto_update_conda false && \
-$CONDA_DIR/bin/conda config --system --set show_channel_urls true && \
-$CONDA_DIR/bin/conda update --all --quiet --yes && \
-$CONDA_DIR/bin/conda create --quiet --yes -n py27 python=2.7 anaconda && \
-$CONDA_DIR/bin/conda create --quiet --yes -n py36 python=3.6 anaconda && \
-$CONDA_DIR/bin/conda clean -tpsy
-
-# Copy LabManager Package
+# Copy libraries
 COPY submodules/labmanager-common /opt/labmanager-common
 COPY submodules/labmanager-service-labbook /opt/labmanager-service-labbook
+ENV SHELL=/bin/bash
 
-# Install lmcommon
-RUN cd /opt/labmanager-common/ && \
-$CONDA_DIR/bin/pip install -r /opt/labmanager-common/requirements.txt && \
-$CONDA_DIR/bin/python setup.py install
+# Super instruction to install all dependencies
+RUN apt-get -y update && \
+    apt-get -y --no-install-recommends install git nginx supervisor wget openssl python3 python3-pip python3-distutils \
+    gcc g++ gosu redis-server libjpeg-dev git-lfs python3-setuptools python3-dev libdpkg-perl && \
+    git lfs install && \
+    cd /opt/labmanager-common/ && \
+    pip3 install wheel && \
+    pip3 install -r /opt/labmanager-common/requirements.txt && \
+    python3 setup.py install && \
+    pip3 install -r /opt/labmanager-service-labbook/requirements.txt && \
+    pip3 install uwsgi && \
+    apt-get -qq -y remove gcc g++ python3-setuptools python3-dev wget && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* /var/log/dpkg.log
 
 # Setup lmcommon config file - should be written by automation before copy
 COPY labmanager_resources/labmanager-config.yaml /etc/gigantum/labmanager.yaml
@@ -46,10 +29,6 @@ COPY submodules/labmanager-common/lmcommon/logging/logging.json.default /etc/gig
 
 # Make needed directories
 RUN mkdir -p /mnt/gigantum && mkdir /opt/redis
-
-# Install API deps
-RUN $CONDA_DIR/bin/pip install -r /opt/labmanager-service-labbook/requirements.txt && \
-$CONDA_DIR/bin/pip install uwsgi
 
 # Copy frontend
 COPY submodules/labmanager-ui/build/ /var/www/

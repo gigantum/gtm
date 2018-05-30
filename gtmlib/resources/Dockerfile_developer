@@ -1,54 +1,31 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 LABEL maintainer="Gigantum <hello@gigantum.io>"
-
-# Install system level dependencies
-RUN apt-get -y update && apt-get -y install build-essential python-dev git supervisor curl gosu \
- redis-server software-properties-common vim emacs zip wget 
-
-# install git lfs
-RUN add-apt-repository ppa:git-core/ppa && apt-get -y update
-RUN curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | bash && apt-get -y install git-lfs
-
-# Install conda
-ENV CONDA_DIR=/opt/conda \
-    SHELL=/bin/bash \
-    MINICONDA_VERSION=4.3.31 \
-    LC_ALL=C.UTF-8 \
-    LANG=C.UTF-8 \
-    GTM_DEVELOPER=1
-
-RUN cd /tmp && wget --quiet https://repo.continuum.io/miniconda/Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
-echo "7fe70b214bee1143e3e3f0467b71453c *Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh" | md5sum -c - && \
-/bin/bash Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh -f -b -p $CONDA_DIR && \
-rm Miniconda3-${MINICONDA_VERSION}-Linux-x86_64.sh && \
-$CONDA_DIR/bin/conda config --system --prepend channels conda-forge && \
-$CONDA_DIR/bin/conda config --system --set auto_update_conda false && \
-$CONDA_DIR/bin/conda config --system --set show_channel_urls true && \
-$CONDA_DIR/bin/conda update --all --quiet --yes && \
-$CONDA_DIR/bin/conda create --quiet --yes -n py27 python=2.7 anaconda && \
-$CONDA_DIR/bin/conda create --quiet --yes -n py36 python=3.6 anaconda && \
-$CONDA_DIR/bin/conda clean -tpsy
-
-# Install node
-RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - && \
-    apt-get -y install nodejs
-
-# Install Yarn
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-    echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
-    apt-get update && apt-get install yarn
 
 # Copy requirements.txt files
 COPY submodules/labmanager-common/requirements.txt /opt/labmanager-common_requirements.txt
+COPY submodules/labmanager-common/requirements-testing.txt /opt/labmanager-common_requirements-testing.txt
 COPY submodules/labmanager-service-labbook/requirements.txt /opt/labmanager-service-labbook_requirements.txt
+COPY submodules/labmanager-service-labbook/requirements-testing.txt /opt/labmanager-service-labbook_requirements-testing.txt
+
+ENV SHELL=/bin/bash
+
+RUN apt-get -y update && \
+    apt-get -y --no-install-recommends install git nginx supervisor wget openssl python3 python3-pip python3-distutils \
+    vim emacs zip curl nodejs npm \
+    gcc g++ gosu redis-server libjpeg-dev git-lfs python3-setuptools python3-dev libdpkg-perl && \
+    git lfs install && \
+    pip3 install wheel
+
+RUN pip3 install -r /opt/labmanager-common_requirements.txt && \
+    pip3 install -r /opt/labmanager-common_requirements-testing.txt && \
+    pip3 install -r /opt/labmanager-service-labbook_requirements.txt && \
+    pip3 install -r /opt/labmanager-service-labbook_requirements-testing.txt && \
+    pip3 install uwsgi
+
+RUN npm install yarn --global
 
 # Setup path and python path
-ENV PATH=$CONDA_DIR/bin:$PATH \
-    PYTHONPATH=$PYTHONPATH:/opt/project/gtmlib/resources/submodules/labmanager-common
-
-# Install dependencies
-RUN $CONDA_DIR/bin/pip install -r /opt/labmanager-common_requirements.txt && \
-$CONDA_DIR/bin/pip install -r /opt/labmanager-service-labbook_requirements.txt
+ENV PYTHONPATH=$PYTHONPATH:/opt/project/gtmlib/resources/submodules/labmanager-common
 
 # Setup lmcommon config file - should be written by automation before copy
 COPY developer_resources/labmanager-config.yaml /etc/gigantum/labmanager.yaml

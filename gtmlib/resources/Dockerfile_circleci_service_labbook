@@ -1,14 +1,16 @@
-FROM gigantum/circleci-common:423e3e76-2018-03-29
+FROM gigantum/circleci-common:a587c30a-2018-05-22
 LABEL maintainer="Gigantum <hello@gigantum.io>"
 
 USER root
 
 # Install python deps and testing deps
-COPY submodules/labmanager-service-labbook/requirements.txt /opt/labmanager-service-labbook-requirements.txt
-RUN pip install -r /opt/labmanager-service-labbook-requirements.txt
+COPY submodules/labmanager-service-labbook/requirements.txt /opt/labmanager-service-labbook_requirements.txt
+COPY submodules/labmanager-service-labbook/requirements-testing.txt /opt/labmanager-service-labbook_requirements-testing.txt
+RUN pip3 install -r /opt/labmanager-service-labbook_requirements.txt && \
+    pip3 install -r /opt/labmanager-service-labbook_requirements-testing.txt
 
 # Setup share dir
-RUN mkdir /mnt/share && sudo chown -R circleci:circleci /mnt/share
+RUN mkdir /mnt/share && chown -R circleci:circleci /mnt/share
 
 # Finish setting up user
 USER circleci
