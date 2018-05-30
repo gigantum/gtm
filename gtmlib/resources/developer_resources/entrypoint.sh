@@ -46,6 +46,9 @@ else
     chmod 777 /var/run/docker.sock
 fi
 
+# Setup LFS
+gosu giguser git lfs install
+
 # Start supervisord
 gosu giguser /usr/bin/supervisord &
 exec gosu giguser "$@"
