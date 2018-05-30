@@ -1,19 +1,14 @@
-FROM ubuntu:16.04
+FROM ubuntu:18.04
 MAINTAINER Gigantum <hello@gigantum.io>
 
 # Install system level dependencies
-RUN apt-get -y update; apt-get -y install git curl gosu
+RUN apt-get -y update && apt-get -y install git curl gosu nodejs npm
 
-# Install node
-RUN curl -sL https://deb.nodesource.com/setup_6.x | bash - && apt-get -y install nodejs
+# Install Yarn
+RUN npm install yarn --global
 
 # Install babel-node
 RUN npm install -g babel-cli@6.26.0 jest@21.2.1 relay-compiler@1.6.0 webpack@3.3.0 jsdom-global@3.0.2 jsdom@>=10.0.0
-
-# Install Yarn
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - && \
-echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list && \
-apt-get update && apt-get install yarn
 
 # Make build location dir
 RUN mkdir /opt/build_dir
