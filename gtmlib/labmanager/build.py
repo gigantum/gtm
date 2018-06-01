@@ -228,7 +228,7 @@ class LabManagerBuilder(object):
                                                                                   dockerfile='Dockerfile_frontend_build',
                                                                                   tag=self._ui_build_image_name,
                                                                                   pull=True, rm=True,
-                                                                                  stream=True, decode=True,
+                                                                                  decode=True,
                                                                                   nocache=no_cache)]
             else:
                 self.docker_client.images.build(path=docker_build_dir, dockerfile='Dockerfile_frontend_build',
@@ -337,7 +337,7 @@ class LabManagerBuilder(object):
                                                                               tag=named_image,
                                                                               labels=labels, nocache=no_cache,
                                                                               pull=True, rm=True,
-                                                                              stream=True, decode=True)]
+                                                                              decode=True)]
         else:
             self.docker_client.images.build(path=docker_build_dir, dockerfile='Dockerfile_labmanager',
                                 tag=named_image, nocache=no_cache,

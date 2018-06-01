@@ -75,10 +75,6 @@ def labmanager_actions(args):
             builder.image_name = args.override_name
 
     if args.action == "build":
-        if "name" in args:
-            if args.name:
-                builder.image_name = args.override_name
-
         builder.build_image(show_output=args.verbose, no_cache=args.no_cache)
 
         # Print Name of image
@@ -86,9 +82,6 @@ def labmanager_actions(args):
 
     elif args.action == "publish":
         image_tag = None
-        if "override_name" in args:
-            if args.override_name:
-                image_tag = args.override_name
 
         builder.publish(image_tag=image_tag, verbose=args.verbose)
 
@@ -175,10 +168,6 @@ def developer_actions(args):
             if args.override_name:
                 builder.image_name = args.override_name
 
-        if "name" in args:
-            if args.name:
-                builder.image_name = args.override_name
-
         builder.build_image(show_output=args.verbose, no_cache=args.no_cache)
 
         # Print Name of image
@@ -215,9 +204,8 @@ def baseimage_actions(args):
     """
     builder = baseimage.BaseImageBuilder()
     image_name = None
-    if "override_name" in args:
-        if args.override_name:
-            image_name = args.override_name
+    if ("override_name" in args) and args.override_name:
+        image_name = args.override_name
 
     if args.action == "build":
         builder.build(image_name=image_name, verbose=args.verbose, no_cache=args.no_cache)
@@ -287,8 +275,8 @@ if __name__ == '__main__':
 
     parser.add_argument("--override-name", "-n",
                         default=None,
-                        metavar="<name>",
-                        help="String to use as the image name")
+                        metavar="<alternative name>",
+                        help="Alternative image target for base-image or labmanager")
     parser.add_argument("--verbose", "-v",
                         default=False,
                         action='store_true',
