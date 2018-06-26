@@ -25,6 +25,7 @@ from gtmlib import labmanager
 from gtmlib import developer
 from gtmlib import baseimage
 from gtmlib import circleci
+from gtmlib.common.logreader import show_log
 
 
 def format_action_help(actions):
@@ -121,6 +122,8 @@ def labmanager_actions(args):
     elif args.action == "run":
         print("Error: Unsupported action provided: `{}`. Did you mean `start`?".format(args.action), file=sys.stderr)
         sys.exit(1)
+    elif args.action == "log":
+        show_log()
     elif args.action == "start" or args.action == "stop":
         # If not a tagged version, force to latest
         if ":" not in builder.image_name:
@@ -148,6 +151,45 @@ def labmanager_actions(args):
     elif args.action == "test":
         tester = labmanager.LabManagerTester(builder.container_name)
         tester.test()
+    else:
+        print("Error: Unsupported action provided: `{}`".format(args.action), file=sys.stderr)
+        sys.exit(1)
+
+
+def demo_actions(args):
+    """Method to provide logic and perform actions for the LabManager component
+
+    Args:
+        args(Namespace): Parsed arguments
+
+    Returns:
+        None
+    """
+
+    builder = labmanager.LabManagerBuilder()
+    if "override_name" in args:
+        if args.override_name:
+            builder.image_name = args.override_name
+
+    if args.action == "build":
+        builder.build_image(show_output=args.verbose, no_cache=args.no_cache, demo=True)
+
+        # Print Name of image
+        print("\n\n*** Built LabManager Image with Demo configuration: {}\n".format(builder.image_name))
+
+    elif args.action == "publish":
+        image_tag = None
+        if "override_name" in args:
+            if args.override_name:
+                image_tag = args.override_name
+
+        builder.publish_demo(image_tag=image_tag, verbose=args.verbose)
+
+        # Print Name of image
+        if not image_tag:
+            image_tag = "latest"
+        print("\n\n*** Published Demo Image: gigantum/gigantum-cloud-demo:{}\n".format(image_tag))
+
     else:
         print("Error: Unsupported action provided: `{}`".format(args.action), file=sys.stderr)
         sys.exit(1)
@@ -188,6 +230,8 @@ def developer_actions(args):
     elif args.action == "attach":
         du = developer.DockerUtil()
         du.attach()
+    elif args.action == "log":
+        show_log()
     else:
         print("Error: Unsupported action provided: {}".format(args.action), file=sys.stderr)
         sys.exit(1)
@@ -246,16 +290,20 @@ if __name__ == '__main__':
                                 ["test", "Run internal tests on a LabManager Docker image"],
                                 ["publish", "Publish the latest build to Docker Hub"],
                                 ["publish-edge", "Publish the latest build to Docker Hub as an Edge release"],
-                                ["publish-demo", "Publish the latest build to Docker Hub as a Demo release"],
                                 ["prune", "Remove all images except the latest LabManager build"],
+                                ["log", "Show the client log file"],
                                 ]
+
+    components['demo'] = [["build", "Build the LabManager Docker image"],
+                          ["publish", "Publish the latest build to Docker Hub as a Demo release"]]
 
     components['developer'] = [["setup", "Generate Docker configuration for development"],
                                ["build", "Build the LabManager Development Docker image based on `setup` config"],
                                ["relay", "Re-compile relay queries. Runs automatically on a build command."],
                                ["run", "Start the LabManager dev container (not applicable to PyCharm configs)"],
                                ["attach", "Attach to the running dev container"],
-                               ["prune", "Remove all images except the latest labmanager-dev build"]]
+                               ["prune", "Remove all images except the latest labmanager-dev build"],
+                               ["log", "Show the client log file"]]
 
     components['base-image'] = [["build", "Build all available base images"],
                                 ["publish", "Publish all available base images to docker hub"]]
@@ -305,3 +353,5 @@ if __name__ == '__main__':
     elif args.component == "circleci":
         # CircleCI Selected
         circleci_actions(args)
+    elif args.component == "demo":
+        demo_actions(args)

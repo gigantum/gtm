@@ -60,7 +60,8 @@ class LabManagerRunner(object):
         """Launch the docker container. """
         working_dir = os.path.join(os.path.expanduser("~"), "gigantum")
         port_mapping = {'10000/tcp': 10000,
-                        '10001/tcp': 10001}
+                        '10001/tcp': 10001,
+                        '10002/tcp': 10002}
 
         # Make sure the container-container share volume exists
         share_volume = DockerVolume("labmanager_share_vol")

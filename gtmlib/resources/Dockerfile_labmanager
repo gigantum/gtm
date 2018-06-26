@@ -1,9 +1,9 @@
 FROM ubuntu:18.04
 LABEL maintainer="Gigantum <hello@gigantum.io>"
 
-# Copy libraries
-COPY submodules/labmanager-common /opt/labmanager-common
-COPY submodules/labmanager-service-labbook /opt/labmanager-service-labbook
+# Copy requirements files
+COPY submodules/labmanager-common/requirements.txt /opt/labmanager-common/requirements.txt
+COPY submodules/labmanager-service-labbook/requirements.txt /opt/labmanager-service-labbook/requirements.txt
 ENV SHELL=/bin/bash
 
 # Super instruction to install all dependencies
@@ -11,15 +11,24 @@ RUN apt-get -y update && \
     apt-get -y --no-install-recommends install git nginx supervisor wget openssl python3 python3-pip python3-distutils \
     gcc g++ gosu redis-server libjpeg-dev git-lfs python3-setuptools python3-dev libdpkg-perl && \
     git lfs install && \
-    cd /opt/labmanager-common/ && \
+    apt-get -y install curl gnupg gnupg1 gnupg2 && \
+    curl -sL https://deb.nodesource.com/setup_8.x | bash && \
+    apt-get -y install nodejs && \
+    npm install -g configurable-http-proxy && \
+    cd /opt/ && git clone https://github.com/gigantum/confhttpproxy.git && pip3 install -e confhttpproxy && \
     pip3 install wheel && \
     pip3 install -r /opt/labmanager-common/requirements.txt && \
-    python3 setup.py install && \
     pip3 install -r /opt/labmanager-service-labbook/requirements.txt && \
     pip3 install uwsgi && \
-    apt-get -qq -y remove gcc g++ python3-setuptools python3-dev wget && \
+    apt-get -qq -y remove gcc g++ python3-dev wget curl gnupg gnupg1 gnupg2 && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /var/log/dpkg.log
+
+# Copy Libraries
+COPY submodules/labmanager-service-labbook /opt/labmanager-service-labbook
+COPY submodules/labmanager-common /opt/labmanager-common
+
+RUN cd /opt/labmanager-common/ && python3 setup.py install
 
 # Setup lmcommon config file - should be written by automation before copy
 COPY labmanager_resources/labmanager-config.yaml /etc/gigantum/labmanager.yaml
@@ -42,9 +51,10 @@ RUN rm /etc/nginx/sites-enabled/default
 COPY labmanager_resources/redis.conf /opt/redis/redis.conf
 
 # Setup Supervisord to launch both uwsgi and nginx
-RUN mkdir -p /opt/log/supervisor && mkdir -p /opt/log/nginx && mkdir -p /opt/run && mkdir -p /opt/nginx && nginx && nginx -s reload && nginx -s quit
+RUN mkdir -p /opt/log/supervisor && mkdir -p /opt/log/nginx && mkdir -p /opt/run && \
+    mkdir -p /opt/nginx && nginx && nginx -s reload && nginx -s quit
 COPY labmanager_resources/supervisord_base.conf /etc/supervisor/supervisord.conf
-COPY labmanager_resources/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY labmanager_resources/supervisord-configured.conf /etc/supervisor/conf.d/supervisord.conf
 
 COPY labmanager_resources/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod u+x /usr/local/bin/entrypoint.sh
@@ -57,6 +67,7 @@ ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 # Expose Ports
 EXPOSE 10000
 EXPOSE 10001
+EXPOSE 10002
 
 # Start by firing up uwsgi, nginx, redis, and workers via supervisord
 CMD ["/usr/bin/supervisord", "--nodaemon"]

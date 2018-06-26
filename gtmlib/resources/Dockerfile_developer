@@ -16,6 +16,9 @@ RUN apt-get -y update && \
     git lfs install && \
     pip3 install wheel
 
+RUN npm install -g configurable-http-proxy && \
+    git clone https://github.com/gigantum/confhttpproxy.git && pip3 install -e confhttpproxy
+
 RUN pip3 install -r /opt/labmanager-common_requirements.txt && \
     pip3 install -r /opt/labmanager-common_requirements-testing.txt && \
     pip3 install -r /opt/labmanager-service-labbook_requirements.txt && \
@@ -43,7 +46,7 @@ COPY labmanager_resources/redis.conf /opt/redis/redis.conf
 # Setup Supervisord to launch redis and rq
 RUN mkdir -p /opt/log/supervisor; mkdir -p /opt/run;
 COPY labmanager_resources/supervisord_base.conf /etc/supervisor/supervisord.conf
-COPY developer_resources/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+COPY developer_resources/supervisord-configured.conf /etc/supervisor/conf.d/supervisord.conf
 
 COPY developer_resources/entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod u+x /usr/local/bin/entrypoint.sh
@@ -54,6 +57,7 @@ COPY awful-intersections-demo.lbk /opt/awful-intersections-demo.lbk
 # Expose Ports
 EXPOSE 10000
 EXPOSE 10001
+EXPOSE 10002
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 

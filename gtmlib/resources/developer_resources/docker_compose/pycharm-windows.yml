@@ -7,6 +7,7 @@ services:
     ports:
      - "10000:10000"
      - "10001:10001"
+     - "10002:10002"
     volumes:
     - {% WORKING_DIR %}:/mnt/gigantum:cached
     - //var/run/docker.sock:/var/run/docker.sock
