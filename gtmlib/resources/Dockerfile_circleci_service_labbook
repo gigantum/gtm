@@ -9,6 +9,10 @@ COPY submodules/labmanager-service-labbook/requirements-testing.txt /opt/labmana
 RUN pip3 install -r /opt/labmanager-service-labbook_requirements.txt && \
     pip3 install -r /opt/labmanager-service-labbook_requirements-testing.txt
 
+# Install Proxy
+RUN apt-get -y install curl gnupg gnupg2 gnupg1 && curl -sL https://deb.nodesource.com/setup_8.x | bash
+RUN apt-get -y install nodejs && npm install -g configurable-http-proxy
+
 # Setup share dir
 RUN mkdir /mnt/share && chown -R circleci:circleci /mnt/share
 

@@ -121,6 +121,24 @@ class LabManagerDevBuilder(LabManagerBuilder):
         with open(final_config_file, "wt") as cf:
             cf.write(yaml.dump(base_data, default_flow_style=False))
 
+            # Write final supervisor file to set CHP parameters
+            base_supervisor = os.path.join(self.docker_build_dir, "developer_resources", 'supervisord.conf')
+            final_supervisor = os.path.join(self.docker_build_dir, "developer_resources", 'supervisord-configured.conf')
+
+            with open(base_supervisor, 'rt') as source:
+                with open(final_supervisor, 'wt') as dest:
+                    supervisor_data = source.read()
+
+                    ext_proxy_port = base_data['proxy']["external_proxy_port"]
+                    api_port = base_data['proxy']['api_port']
+
+                    dest.write(f"""{supervisor_data}\n\n
+[program:chp]
+command=configurable-http-proxy --ip=0.0.0.0 --port={ext_proxy_port} --api-port={api_port} --default-target='http://localhost:10002'
+autostart=true
+autorestart=true
+priority=0""")
+
     @staticmethod
     def _get_docker_run_env_vars() -> typing.Dict[str, typing.Any]:
         """Method to get the run-time environment variables for docker
@@ -230,7 +248,7 @@ class LabManagerDevBuilder(LabManagerBuilder):
                                                                   tag=named_image,
                                                                   labels=labels, nocache=no_cache,
                                                                   pull=True, rm=True,
-                                                                  stream=True, decode=True)]
+                                                                  decode=True)]
         else:
             self.docker_client.images.build(path=self.docker_build_dir, dockerfile='Dockerfile_developer',
                                             tag=named_image, nocache=no_cache,

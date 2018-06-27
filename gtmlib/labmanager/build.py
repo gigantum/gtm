@@ -178,7 +178,7 @@ class LabManagerBuilder(object):
         except NotFound:
             pass
 
-    def build_image(self, show_output: bool=False, no_cache: bool=False) -> None:
+    def build_image(self, show_output: bool=False, no_cache: bool=False, demo: bool=False) -> None:
         """Method to build the LabManager Docker Image
 
         Returns:
@@ -228,7 +228,7 @@ class LabManagerBuilder(object):
                                                                                   dockerfile='Dockerfile_frontend_build',
                                                                                   tag=self._ui_build_image_name,
                                                                                   pull=True, rm=True,
-                                                                                  stream=True, decode=True,
+                                                                                  decode=True,
                                                                                   nocache=no_cache)]
             else:
                 self.docker_client.images.build(path=docker_build_dir, dockerfile='Dockerfile_frontend_build',
@@ -294,11 +294,17 @@ class LabManagerBuilder(object):
         shutil.rmtree(temp_ui_dir)
 
         # Build LabManager container
+        if demo:
+            config_override_name = 'demo-config-override.yaml'
+            supervisor_name = 'supervisord-demo.conf'
+        else:
+            config_override_name = 'labmanager-config-override.yaml'
+            supervisor_name = 'supervisord-labmanager.conf'
+
         # Write updated config file
         base_config_file = os.path.join(docker_build_dir, "submodules", 'labmanager-common', 'lmcommon',
                                         'configuration', 'config', 'labmanager.yaml.default')
-        overwrite_config_file = os.path.join(docker_build_dir, 'labmanager_resources',
-                                             'labmanager-config-override.yaml')
+        overwrite_config_file = os.path.join(docker_build_dir, 'labmanager_resources' ,config_override_name)
         final_config_file = os.path.join(docker_build_dir, 'labmanager_resources', 'labmanager-config.yaml')
 
         with open(base_config_file, "rt") as cf:
@@ -320,6 +326,24 @@ class LabManagerBuilder(object):
         with open(final_config_file, "wt") as cf:
             cf.write(yaml.dump(base_data, default_flow_style=False))
 
+        # Write final supervisor file to set CHP parameters
+        base_supervisor = os.path.join(docker_build_dir, "labmanager_resources", supervisor_name)
+        final_supervisor = os.path.join(docker_build_dir, "labmanager_resources", 'supervisord-configured.conf')
+
+        with open(base_supervisor, 'rt') as source:
+            with open(final_supervisor, 'wt') as dest:
+                supervisor_data = source.read()
+
+                ext_proxy_port = base_data['proxy']["external_proxy_port"]
+                api_port = base_data['proxy']['api_port']
+
+                dest.write(f"""{supervisor_data}\n\n
+[program:chp]
+command=configurable-http-proxy --ip=0.0.0.0 --port={ext_proxy_port} --api-port={api_port} --default-target='http://localhost:10002'
+autostart=true
+autorestart=true
+priority=0""")
+
         # Image Labels
         labels = {'io.gigantum.app': 'labmanager',
                   'io.gigantum.maintainer.email': 'hello@gigantum.io'}
@@ -337,11 +361,11 @@ class LabManagerBuilder(object):
                                                                               tag=named_image,
                                                                               labels=labels, nocache=no_cache,
                                                                               pull=True, rm=True,
-                                                                              stream=True, decode=True)]
+                                                                              decode=True)]
         else:
             self.docker_client.images.build(path=docker_build_dir, dockerfile='Dockerfile_labmanager',
-                                tag=named_image, nocache=no_cache,
-                                pull=True, labels=labels)
+                                            tag=named_image, nocache=no_cache,
+                                            pull=True, labels=labels)
 
         # Tag with `latest` for auto-detection of image on launch
         self.docker_client.api.tag(named_image, 'gigantum/labmanager', 'latest')

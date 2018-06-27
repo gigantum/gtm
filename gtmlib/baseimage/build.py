@@ -115,7 +115,7 @@ class BaseImageBuilder(object):
                                                                               tag=named_tag,
                                                                               nocache=no_cache,
                                                                               pull=pull, rm=True,
-                                                                              stream=True, decode=True)]
+                                                                              decode=True)]
         else:
             client.images.build(path=build_dir, tag=named_tag, pull=True, nocache=no_cache)
 

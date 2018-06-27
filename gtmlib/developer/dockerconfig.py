@@ -54,13 +54,15 @@ class DockerConfig(object):
 
         return choice
 
-    def update_template_data(self, is_windows: bool, use_pycharm: bool, working_dir: str, uid: str) -> str:
+    def update_template_data(self, is_windows: bool, use_pycharm: bool, is_backend: bool,
+                             working_dir: str, uid: str) -> str:
         """Method to select a docker-compose template and update variables
 
         Args:
             is_windows:
             use_pycharm:
             working_dir:
+            is_backend:
             uid:
 
         Returns:
@@ -69,11 +71,15 @@ class DockerConfig(object):
         if is_windows:
             if use_pycharm:
                 template_file = os.path.join(self.compose_file_root, 'pycharm-windows.yml')
+            elif is_backend is False:
+                template_file = os.path.join(self.compose_file_root, 'shell-ui-windows.yml')
             else:
                 template_file = os.path.join(self.compose_file_root, 'shell-windows.yml')
         else:
             if use_pycharm:
                 template_file = os.path.join(self.compose_file_root, 'pycharm-nix.yml')
+            elif is_backend is False:
+                template_file = os.path.join(self.compose_file_root, 'shell-ui-nix.yml')
             else:
                 template_file = os.path.join(self.compose_file_root, 'shell-nix.yml')
 
@@ -164,7 +170,7 @@ su giguser
         print("Answers saved to {}".format(answer_fname))
 
         # Get template text and update with variables
-        template_data = self.update_template_data(is_windows, use_pycharm, working_dir, uid)
+        template_data = self.update_template_data(is_windows, use_pycharm, is_backend, working_dir, uid)
 
         # Generate docker-compose file
         output_file = os.path.join(self.resources_root, 'docker-compose.yml')
