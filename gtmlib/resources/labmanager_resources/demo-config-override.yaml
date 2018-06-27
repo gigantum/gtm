@@ -12,3 +12,13 @@ auth:
 
 proxy:
   apparent_proxy_port: 80
+
+
+# LabBook Container Configuration
+container:
+  # If null, no limit
+  # To set enter string with a units identification char (e.g. 100000b, 1000k, 128m, 1g)
+  memory: 4g
+  # If null, no limit
+  # To set enter a float for the CPU allocation desired. e.g. 4 CPUs available, 1.5 limits container to 1.5 CPUs
+  cpu: 1
