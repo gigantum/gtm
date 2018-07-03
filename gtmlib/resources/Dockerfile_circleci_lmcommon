@@ -10,7 +10,7 @@ ENV SHELL=/bin/bash \
 # Install system level dependencies
 RUN apt-get -y update && \
     apt-get -y --no-install-recommends install git nginx supervisor wget openssl python3 python3-pip python3-distutils \
-    gcc g++ gosu redis-server libjpeg-dev git-lfs python3-setuptools python3-dev libdpkg-perl ssh && \
+    gcc g++ gosu redis-server libjpeg-dev git-lfs python3-setuptools python3-dev libdpkg-perl ssh zip unzip && \
     pip3 install wheel
 
 # Setup circleci user
