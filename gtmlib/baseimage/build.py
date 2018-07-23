@@ -117,7 +117,7 @@ class BaseImageBuilder(object):
                                                                               pull=pull, rm=True,
                                                                               decode=True)]
         else:
-            client.images.build(path=build_dir, tag=named_tag, pull=True, nocache=no_cache)
+            client.images.build(path=build_dir, tag=named_tag, pull=pull, nocache=no_cache)
 
         # Tag with latest in case images depend on each other. Will not get published.
         client.images.get(named_tag).tag(f"{base_tag}:latest")
