@@ -3,3 +3,5 @@
 git:
   working_directory: "/mnt/gigantum"
   lfs_enabled: true
+container:
+  cuda_version: null

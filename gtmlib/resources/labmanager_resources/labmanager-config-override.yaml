@@ -6,3 +6,5 @@ git:
 flask:
   DEBUG: false
   TESTING: false
+container:
+  cuda_version: null
