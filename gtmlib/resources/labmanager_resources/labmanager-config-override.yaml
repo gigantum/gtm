@@ -8,3 +8,6 @@ flask:
   TESTING: false
 container:
   cuda_version: null
+environment:
+  repo_url:
+  - https://github.com/gigantum/environment-components.git@cuda
