@@ -480,6 +480,6 @@ priority=0""")
                     continue
                 print(f" - Removing {image.tags[0]}")
                 try:
-                    self.docker_client.images.remove(image.id)
+                    self.docker_client.images.remove(image.id, force=True)
                 except APIError:
                     print(f"Error trying to remove image, skipping {image.id}")
